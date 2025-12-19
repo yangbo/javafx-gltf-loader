@@ -48,122 +48,177 @@ public class GLTFAsset {
 
 
 
-    public GLTFAsset(String filePath) throws IOException,GLTFException {
+    public GLTFAsset(String filePath) throws IOException, GLTFException {
         this.gltfFile = new File(filePath);
         this.gltfDir = this.gltfFile.getParent();
         String content = new Scanner(this.gltfFile).useDelimiter("\\Z").next();
 
-        //get root
+        // 获取根对象
         this.obj = new JSONObject(content);
-        //get buffers
-        this.buffersJSON = this.obj.getJSONArray("buffers");
-
-        this.buffers = new GLTFBuffer[buffersJSON.length()];
-        for(int i = 0; i < this.buffersJSON.length(); i++){
-            buffers[i] = getBufferFromIndex(i);
-        }
-        this.bufferViewsJSON = this.obj.getJSONArray("bufferViews");
-        this.bufferViews = new GLTFBufferView[this.bufferViewsJSON.length()];
-        for(int i = 0; i < bufferViewsJSON.length(); i++){
-            this.bufferViews[i] = new GLTFBufferView(
-                    (JSONObject)this.bufferViewsJSON.get(i),
-                    this.buffers);
-        }
-        this.accessorsJSON = obj.getJSONArray("accessors");
-        this.accessors = new GLTFAccessor[this.accessorsJSON.length()];
-        for (int i = 0; i < accessorsJSON.length(); i++) {
-            this.accessors[i] = GLTFAccessor.fromJSONObject(
-                    this.accessorsJSON.getJSONObject(i),
-                    this.bufferViews);
-        }
-        this.imagesJSON = obj.getJSONArray("images");
-        this.images = new GLTFImage[this.imagesJSON.length()];
-        for(int i = 0; i < imagesJSON.length(); i++){
-            this.images[i] = GLTFImage.fromJSONObject(
-                this.imagesJSON.getJSONObject(i),
-                bufferViews,
-                gltfDir
-            );
-        }
-        this.samplersJSON = obj.getJSONArray("samplers");
-        this.samplers = new GLTFTextureSampler[this.samplersJSON.length()];
-        for (int i = 0; i < this.samplersJSON.length(); i++) {
-            this.samplers[i] = GLTFTextureSampler.fromJSONObject(
-                this.samplersJSON.getJSONObject(i)
-            );
-        }
-        this.texturesJSON = obj.getJSONArray("textures");
-        this.textures = new GLTFTexture[this.texturesJSON.length()];
-        for (int i = 0; i < this.texturesJSON.length(); i++) {
-            this.textures[i] = GLTFTexture.fromJSONObject(
-                this.texturesJSON.getJSONObject(i),
-                this.images,
-                this.samplers
-            );
-        }
         
-        this.materialsJSON = obj.getJSONArray("materials");
-        this.materials = new GLTFMaterial[this.materialsJSON.length()];
-        for (int i = 0; i < this.materialsJSON.length(); i++) {
-            this.materials[i] = GLTFMaterial.fromJSONObject(
-                this.materialsJSON.getJSONObject(i),
-                this.textures
+        // 解析 buffers
+        this.buffersJSON = this.obj.optJSONArray("buffers");
+        if (buffersJSON != null) {
+            this.buffers = new GLTFBuffer[buffersJSON.length()];
+            for (int i = 0; i < this.buffersJSON.length(); i++) {
+                buffers[i] = getBufferFromIndex(i);
+            }
+        } else {
+            this.buffers = new GLTFBuffer[0];
+        }
+
+        // 解析 bufferViews
+        this.bufferViewsJSON = this.obj.optJSONArray("bufferViews");
+        if (bufferViewsJSON != null) {
+            this.bufferViews = new GLTFBufferView[this.bufferViewsJSON.length()];
+            for (int i = 0; i < bufferViewsJSON.length(); i++) {
+                this.bufferViews[i] = new GLTFBufferView(
+                        (JSONObject) this.bufferViewsJSON.get(i),
+                        this.buffers);
+            }
+        } else {
+            this.bufferViews = new GLTFBufferView[0];
+        }
+
+        // 解析 accessors
+        this.accessorsJSON = obj.optJSONArray("accessors");
+        if (accessorsJSON != null) {
+            this.accessors = new GLTFAccessor[this.accessorsJSON.length()];
+            for (int i = 0; i < accessorsJSON.length(); i++) {
+                this.accessors[i] = GLTFAccessor.fromJSONObject(
+                        this.accessorsJSON.getJSONObject(i),
+                        this.bufferViews);
+            }
+        } else {
+            this.accessors = new GLTFAccessor[0];
+        }
+
+        // 解析 images
+        this.imagesJSON = obj.optJSONArray("images");
+        if (imagesJSON != null) {
+            this.images = new GLTFImage[this.imagesJSON.length()];
+            for (int i = 0; i < imagesJSON.length(); i++) {
+                this.images[i] = GLTFImage.fromJSONObject(
+                        this.imagesJSON.getJSONObject(i),
+                        bufferViews,
+                        gltfDir
                 );
+            }
+        } else {
+            this.images = new GLTFImage[0];
         }
-        this.meshesJSON = obj.getJSONArray("meshes");
-        this.meshes = new GLTFMesh[this.meshesJSON.length()];
-        for (int i = 0; i < this.meshesJSON.length(); i++) {
-            this.meshes[i] = GLTFMesh.fromJSONObject(
-                this.meshesJSON.getJSONObject(i),
-                this.accessors,
-                this.materials
-            );
+
+        // 解析 samplers
+        this.samplersJSON = obj.optJSONArray("samplers");
+        if (samplersJSON != null) {
+            this.samplers = new GLTFTextureSampler[this.samplersJSON.length()];
+            for (int i = 0; i < this.samplersJSON.length(); i++) {
+                this.samplers[i] = GLTFTextureSampler.fromJSONObject(
+                        this.samplersJSON.getJSONObject(i)
+                );
+            }
+        } else {
+            this.samplers = new GLTFTextureSampler[0];
         }
-        if(obj.has("skins")){
-            this.skinsJSON = obj.getJSONArray("skins");//TODO check if this key is correct.
+
+        // 解析 textures
+        this.texturesJSON = obj.optJSONArray("textures");
+        if (texturesJSON != null) {
+            this.textures = new GLTFTexture[this.texturesJSON.length()];
+            for (int i = 0; i < this.texturesJSON.length(); i++) {
+                this.textures[i] = GLTFTexture.fromJSONObject(
+                        this.texturesJSON.getJSONObject(i),
+                        this.images,
+                        this.samplers
+                );
+            }
+        } else {
+            this.textures = new GLTFTexture[0];
+        }
+
+        // 解析 materials
+        this.materialsJSON = obj.optJSONArray("materials");
+        if (materialsJSON != null) {
+            this.materials = new GLTFMaterial[this.materialsJSON.length()];
+            for (int i = 0; i < this.materialsJSON.length(); i++) {
+                this.materials[i] = GLTFMaterial.fromJSONObject(
+                        this.materialsJSON.getJSONObject(i),
+                        this.textures
+                );
+            }
+        } else {
+            this.materials = new GLTFMaterial[0];
+        }
+
+        // 解析 meshes
+        this.meshesJSON = obj.optJSONArray("meshes");
+        if (meshesJSON != null) {
+            this.meshes = new GLTFMesh[this.meshesJSON.length()];
+            for (int i = 0; i < this.meshesJSON.length(); i++) {
+                this.meshes[i] = GLTFMesh.fromJSONObject(
+                        this.meshesJSON.getJSONObject(i),
+                        this.accessors,
+                        this.materials
+                );
+            }
+        } else {
+            this.meshes = new GLTFMesh[0];
+        }
+        // 解析 skins
+        this.skinsJSON = obj.optJSONArray("skins");
+        if (skinsJSON != null) {
             this.skins = new GLTFSkin[this.skinsJSON.length()];
             for (int i = 0; i < this.skinsJSON.length(); i++) {
                 this.skins[i] = GLTFSkin.fromJSONObject(
-                    this.skinsJSON.getJSONObject(i)
+                        this.skinsJSON.getJSONObject(i)
                 );
             }
+        } else {
+            this.skins = new GLTFSkin[0];
         }
-        else{
-            this.skinsJSON = null;
-            this.skins = new GLTFSkin[]{};
-        }
-        if(obj.has("cameras")){
-            this.camerasJSON = obj.getJSONArray("cameras");
+
+        // 解析 cameras
+        this.camerasJSON = obj.optJSONArray("cameras");
+        if (camerasJSON != null) {
             this.cameras = new GLTFCamera[this.camerasJSON.length()];
             for (int i = 0; i < this.camerasJSON.length(); i++) {
                 this.cameras[i] = GLTFCamera.fromJSONObject(
-                    this.camerasJSON.getJSONObject(i)
+                        this.camerasJSON.getJSONObject(i)
                 );
             }
-        }
-        else{
-            this.camerasJSON = null;
-            this.cameras = new GLTFCamera[]{};
+        } else {
+            this.cameras = new GLTFCamera[0];
         }
 
-        this.nodesJSON = obj.getJSONArray("nodes");
-        this.nodes = new GLTFNode[this.nodesJSON.length()];
-        for (int i = 0; i < this.nodesJSON.length(); i++) {
-            this.nodes[i] = GLTFNode.fromJSONObject(
-                this.nodesJSON.getJSONObject(i),
-                this.cameras,
-                this.nodes,
-                this.meshes,
-                this.skins
-            );
+        // 解析 nodes
+        this.nodesJSON = obj.optJSONArray("nodes");
+        if (nodesJSON != null) {
+            this.nodes = new GLTFNode[this.nodesJSON.length()];
+            for (int i = 0; i < this.nodesJSON.length(); i++) {
+                this.nodes[i] = GLTFNode.fromJSONObject(
+                        this.nodesJSON.getJSONObject(i),
+                        this.cameras,
+                        this.nodes,
+                        this.meshes,
+                        this.skins
+                );
+            }
+        } else {
+            this.nodes = new GLTFNode[0];
         }
-        this.scenesJSON = obj.getJSONArray("scenes");
-        this.scenes = new GLTFScene[this.scenesJSON.length()];
-        for (int i = 0; i < this.scenesJSON.length(); i++) {
-            this.scenes[i] = GLTFScene.fromJSONObject(
-                this.scenesJSON.getJSONObject(i),
-                this.nodes
-            );
+
+        // 解析 scenes
+        this.scenesJSON = obj.optJSONArray("scenes");
+        if (scenesJSON != null) {
+            this.scenes = new GLTFScene[this.scenesJSON.length()];
+            for (int i = 0; i < this.scenesJSON.length(); i++) {
+                this.scenes[i] = GLTFScene.fromJSONObject(
+                        this.scenesJSON.getJSONObject(i),
+                        this.nodes
+                );
+            }
+        } else {
+            this.scenes = new GLTFScene[0];
         }
     }
 

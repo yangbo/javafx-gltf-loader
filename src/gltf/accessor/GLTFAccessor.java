@@ -35,26 +35,24 @@ public class GLTFAccessor {
      */
     public static GLTFAccessor fromJSONObject(JSONObject jObj,
                                               GLTFBufferView[] bufferViews)
-            throws InvalidGLTFTypeException
-    {
+            throws InvalidGLTFTypeException {
         GLTFComponentType componentType = GLTFComponentType.fromTypeId(
                 jObj.getInt("componentType")
         );
         GLTFAccessorType dataType = GLTFAccessorType.valueOf(
                 String.valueOf(jObj.get("type"))
         );
-        int bufferViewIdx = jObj.getInt("bufferView");
-        GLTFBufferView bufferView = bufferViews[bufferViewIdx];
 
-        int byteOffset = jObj.has("byteOffset") ?
-                        jObj.getInt("byteOffset") : 0;
+        int bufferViewIdx = jObj.optInt("bufferView", -1);
+        GLTFBufferView bufferView = bufferViewIdx != -1 ? bufferViews[bufferViewIdx] : null;
 
+        int byteOffset = jObj.optInt("byteOffset", 0);
         int nElem = jObj.getInt("count");
 
-        JSONArray minArray = jObj.getJSONArray("min");
-        JSONArray maxArray = jObj.getJSONArray("max");
+        JSONArray minArray = jObj.optJSONArray("min");
+        JSONArray maxArray = jObj.optJSONArray("max");
 
-        switch(componentType){
+        switch (componentType) {
             case BYTE:
             case UNSIGNED_BYTE:
                 //edit if a case is seen where
@@ -62,12 +60,15 @@ public class GLTFAccessor {
                 return null;
             case SHORT:
             case UNSIGNED_SHORT:
-
-                short[] minShort = new short[dataType.size];
-                short[] maxShort = new short[dataType.size];
-                for (int i = 0; i < dataType.size; i++) {
-                    minShort[i] = (short)minArray.getInt(i);
-                    maxShort[i] = (short)maxArray.getInt(i);
+                short[] minShort = null;
+                short[] maxShort = null;
+                if (minArray != null && maxArray != null) {
+                    minShort = new short[dataType.size];
+                    maxShort = new short[dataType.size];
+                    for (int i = 0; i < dataType.size; i++) {
+                        minShort[i] = (short) minArray.optInt(i, 0);
+                        maxShort[i] = (short) maxArray.optInt(i, 0);
+                    }
                 }
                 return new GLTFShortAccessor(bufferView,
                         componentType,
@@ -77,11 +78,15 @@ public class GLTFAccessor {
                         maxShort,
                         dataType);
             case UNSIGNED_INT:
-                int[] minInt = new int[dataType.size];
-                int[] maxInt = new int[dataType.size];
-                for (int i = 0; i < dataType.size; i++) {
-                    minInt[i] = minArray.getInt(i);
-                    maxInt[i] = maxArray.getInt(i);
+                int[] minInt = null;
+                int[] maxInt = null;
+                if (minArray != null && maxArray != null) {
+                    minInt = new int[dataType.size];
+                    maxInt = new int[dataType.size];
+                    for (int i = 0; i < dataType.size; i++) {
+                        minInt[i] = minArray.optInt(i, 0);
+                        maxInt[i] = maxArray.optInt(i, 0);
+                    }
                 }
                 return new GLTFIntAccessor(bufferView,
                         componentType,
@@ -91,11 +96,15 @@ public class GLTFAccessor {
                         maxInt,
                         dataType);
             case FLOAT:
-                float[] minFloat = new float[dataType.size];
-                float[] maxFloat = new float[dataType.size];
-                for (int i = 0; i < dataType.size; i++) {
-                    minFloat[i] = minArray.getFloat(i);
-                    maxFloat[i] = maxArray.getFloat(i);
+                float[] minFloat = null;
+                float[] maxFloat = null;
+                if (minArray != null && maxArray != null) {
+                    minFloat = new float[dataType.size];
+                    maxFloat = new float[dataType.size];
+                    for (int i = 0; i < dataType.size; i++) {
+                        minFloat[i] = minArray.optFloat(i, 0f);
+                        maxFloat[i] = maxArray.optFloat(i, 0f);
+                    }
                 }
                 return new GLTFFloatAccessor(bufferView,
                         componentType,

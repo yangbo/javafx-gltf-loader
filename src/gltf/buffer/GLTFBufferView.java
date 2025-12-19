@@ -36,11 +36,11 @@ public class GLTFBufferView {
     public GLTFBufferView(JSONObject bvObj, GLTFBuffer[] buffers){
         this(
                 buffers[bvObj.getInt("buffer")],
-                bvObj.getInt("byteOffset"),
+                bvObj.optInt("byteOffset", 0),
                 bvObj.getInt("byteLength"),
-                bvObj.has("byteStride") ? bvObj.getInt("byteStride") : -1,
-                bvObj.has("target") ? bvObj.getInt("target") : -1,
-                bvObj.getString("name"));
+                bvObj.optInt("byteStride", -1),
+                bvObj.optInt("target", -1),
+                bvObj.optString("name", null));
     }
 
     /**
