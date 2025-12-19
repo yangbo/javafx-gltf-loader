@@ -1,13 +1,19 @@
 package gltf.jfx.example;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.*;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.Cylinder;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
 /**
  * GLTF 模型查看器示例程序
+ * 包含居中逻辑、右上角坐标轴指示器以及可见的相机模型
  */
 public class GLTFViewerExample extends Application {
 
@@ -15,151 +21,124 @@ public class GLTFViewerExample extends Application {
     private double mousePosY;
     private double mouseOldX;
     private double mouseOldY;
-    private final Rotate rotateX = new Rotate(0, Rotate.X_AXIS);
-    private final Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
+    
+    private final Rotate rotateX = new Rotate(-20, Rotate.X_AXIS);
+    private final Rotate rotateY = new Rotate(-20, Rotate.Y_AXIS);
 
     @Override
     public void start(Stage primaryStage) {
         try {
-            // 创建根节点
-            Group root = new Group();
-
-            // 加载 glTF 资产
+            // 1. 加载模型
             java.net.URL resource = getClass().getResource("/robot/scene.gltf");
-            String gltfPath;
-            if (resource != null) {
-                gltfPath = java.nio.file.Paths.get(resource.toURI()).toString();
-            } else {
-                gltfPath = "src/main/resources/asset/robot/scene.gltf";
-            }
-            System.out.println("正在加载模型: " + gltfPath);
+            String gltfPath = (resource != null) ? java.nio.file.Paths.get(resource.toURI()).toString() : "src/main/resources/asset/robot/scene.gltf";
             JFXGLTFAsset asset = new JFXGLTFAsset(gltfPath);
-
-            // 构建 3D 场景
             Group modelGroup = asset.build3DScene(asset.scenes[0]);
 
-            // --- 居中逻辑开始 ---
-            double[] bounds = {
-                Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, // min
-                Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY  // max
-            };
+            // 2. 居中计算
+            double[] bounds = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                               Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+            calculateWorldBounds(asset.scenes[0].nodes[0], new float[]{1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1}, bounds);
 
-            float[] identity = {
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1
-            };
+            double centerX = (bounds[0] + bounds[3]) / 2.0;
+            double centerY = (bounds[1] + bounds[4]) / 2.0;
+            double centerZ = (bounds[2] + bounds[5]) / 2.0;
+            double modelRadius = Math.sqrt(Math.pow(bounds[3]-bounds[0], 2) + Math.pow(bounds[4]-bounds[1], 2) + Math.pow(bounds[5]-bounds[2], 2)) / 2.0;
+            if (modelRadius < 1) modelRadius = 100;
 
-            for (gltf.GLTFNode node : asset.scenes[0].nodes) {
-                calculateWorldBounds(node, identity, bounds);
-            }
+            modelGroup.setTranslateX(-centerX);
+            modelGroup.setTranslateY(-centerY);
+            modelGroup.setTranslateZ(-centerZ);
 
-            double minX = bounds[0], minY = bounds[1], minZ = bounds[2];
-            double maxX = bounds[3], maxY = bounds[4], maxZ = bounds[5];
-
-            double modelRadius = 100;
-
-            if (minX != Double.POSITIVE_INFINITY) {
-                double centerX = (minX + maxX) / 2.0;
-                double centerY = (minY + maxY) / 2.0;
-                double centerZ = (minZ + maxZ) / 2.0;
-
-                // 使模型几何中心位于局部原点
-                modelGroup.setTranslateX(-centerX);
-                modelGroup.setTranslateY(-centerY);
-                modelGroup.setTranslateZ(-centerZ);
-                
-                double dx = maxX - minX;
-                double dy = maxY - minY;
-                double dz = maxZ - minZ;
-                modelRadius = Math.sqrt(dx*dx + dy*dy + dz*dz) / 2.0;
-                
-                System.out.println(String.format("模型世界空间中心点: [%.2f, %.2f, %.2f]", centerX, centerY, centerZ));
-                System.out.println(String.format("模型世界空间尺寸: [%.2f, %.2f, %.2f]", dx, dy, dz));
-            }
-            // --- 居中逻辑结束 ---
-
-            // 为了旋转，将 modelGroup 放入 world 组
+            // 3. 构建 3D 世界
             Group world = new Group();
+            Rotate gltfFix = new Rotate(180, Rotate.X_AXIS);
+            modelGroup.getTransforms().add(gltfFix);
             world.getChildren().add(modelGroup);
+
+            // 相机辅助模型 (对着模型)
+            double cameraModelDist = modelRadius * 2.0;
+            Group cameraGizmo = createCameraGizmo(modelRadius * 0.15);
+            cameraGizmo.setTranslateZ(-cameraModelDist);
+            world.getChildren().add(cameraGizmo);
+
+            world.getTransforms().addAll(rotateY, rotateX);
+
+            // 4. 主 SubScene
+            Group mainRoot = new Group(world, new AmbientLight(Color.WHITE));
+            PointLight pl = new PointLight(Color.WHITE);
+            pl.setTranslateZ(-modelRadius * 5);
+            mainRoot.getChildren().add(pl);
+
+            SubScene mainSubScene = new SubScene(mainRoot, 1024, 768, true, SceneAntialiasing.BALANCED);
+            mainSubScene.setFill(Color.web("#222222"));
             
-            // 修正 JavaFX 坐标系
-            Rotate initialRotate = new Rotate(180, Rotate.X_AXIS);
-            world.getTransforms().addAll(initialRotate, rotateX, rotateY);
+            PerspectiveCamera godCamera = new PerspectiveCamera(true);
+            godCamera.setNearClip(0.1);
+            godCamera.setFarClip(1000000.0);
+            godCamera.setTranslateZ(-modelRadius * 5.0);
+            mainSubScene.setCamera(godCamera);
 
-            // 将 world 放入 root
-            root.getChildren().add(world);
+            // 5. 坐标轴 SubScene
+            Group axisContent = createAxisGizmo(60);
+            axisContent.getTransforms().addAll(rotateY, rotateX);
+            SubScene axisSubScene = new SubScene(new Group(axisContent, new AmbientLight(Color.WHITE)), 200, 200, true, SceneAntialiasing.BALANCED);
+            axisSubScene.setCamera(new PerspectiveCamera(false));
 
-            // 设置环境光
-            AmbientLight ambientLight = new AmbientLight(Color.WHITE);
-            root.getChildren().add(ambientLight);
+            // 6. 容器与响应式布局
+            StackPane rootPane = new StackPane();
+            rootPane.getChildren().addAll(mainSubScene, axisSubScene);
+            StackPane.setAlignment(axisSubScene, Pos.TOP_RIGHT);
+
+            // 绑定尺寸，防止模型消失
+            mainSubScene.widthProperty().bind(rootPane.widthProperty());
+            mainSubScene.heightProperty().bind(rootPane.heightProperty());
+
+            Scene scene = new Scene(rootPane, 1024, 768);
             
-            // 设置点光源
-            PointLight pointLight = new PointLight(Color.WHITE);
-            pointLight.setTranslateZ(-1000);
-            pointLight.setTranslateY(-1000);
-            root.getChildren().add(pointLight);
-
-            // 创建场景，Scene 构造函数中的 true 表示启用深度缓冲
-            double width = 1024;
-            double height = 768;
-            Scene scene = new Scene(root, width, height, true, SceneAntialiasing.BALANCED);
-            scene.setFill(Color.SILVER);
-
-            // 设置摄像头
-            PerspectiveCamera camera = new PerspectiveCamera(true);
-            camera.setNearClip(0.1);
-            camera.setFarClip(100000.0);
-            
-            // 自动调整相机距离
-            double distance = modelRadius * 3.0; 
-            if (distance < 10) distance = 200;
-            
-            camera.setTranslateZ(-distance); 
-            scene.setCamera(camera);
-            
-            // ！！！核心修复：将 root 移至窗口中心 ！！！
-            // 在 PerspectiveCamera(true) 模式下，(0,0,0) 默认在视口中心
-            // 但如果之前模型完全看不见，可能是因为 root 的坐标超出了视野。
-            // 既然用户反馈“完全看不见”，我们将 root 归零，利用相机后退来观察。
-            root.setTranslateX(0);
-            root.setTranslateY(0);
-
-            // 添加鼠标交互
-            scene.setOnMousePressed(me -> {
-                mousePosX = me.getSceneX();
-                mousePosY = me.getSceneY();
-            });
-
+            scene.setOnMousePressed(me -> { mousePosX = me.getSceneX(); mousePosY = me.getSceneY(); });
             scene.setOnMouseDragged(me -> {
-                mouseOldX = mousePosX;
-                mouseOldY = mousePosY;
+                double mouseDeltaX = (me.getSceneX() - mousePosX);
+                double mouseDeltaY = (me.getSceneY() - mousePosY);
                 mousePosX = me.getSceneX();
                 mousePosY = me.getSceneY();
-                double mouseDeltaX = (mousePosX - mouseOldX);
-                double mouseDeltaY = (mousePosY - mouseOldY);
-
                 rotateY.setAngle(rotateY.getAngle() + mouseDeltaX * 0.2);
                 rotateX.setAngle(rotateX.getAngle() - mouseDeltaY * 0.2);
             });
-
             scene.setOnScroll(se -> {
-                double delta = se.getDeltaY();
-                double scale = modelGroup.getScaleX();
-                double newScale = delta > 0 ? scale * 1.1 : scale / 1.1;
-                modelGroup.setScaleX(newScale);
-                modelGroup.setScaleY(newScale);
-                modelGroup.setScaleZ(newScale);
+                double zoomFactor = se.getDeltaY() > 0 ? 0.9 : 1.1;
+                godCamera.setTranslateZ(godCamera.getTranslateZ() * zoomFactor);
             });
 
-            primaryStage.setTitle("JavaFX GLTF Viewer Example");
+            primaryStage.setTitle("GLTF Viewer - Visible Camera and Axis Gizmo");
             primaryStage.setScene(scene);
             primaryStage.show();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private Group createAxisGizmo(double size) {
+        Group g = new Group();
+        Box xAxis = new Box(size, 2, 2); xAxis.setTranslateX(size/2); xAxis.setMaterial(new PhongMaterial(Color.RED));
+        Box yAxis = new Box(2, size, 2); yAxis.setTranslateY(size/2); yAxis.setMaterial(new PhongMaterial(Color.GREEN));
+        Box zAxis = new Box(2, 2, size); zAxis.setTranslateZ(size/2); zAxis.setMaterial(new PhongMaterial(Color.BLUE));
+        g.getChildren().addAll(xAxis, yAxis, zAxis);
+        return g;
+    }
+
+    private Group createCameraGizmo(double size) {
+        Group g = new Group();
+        Box body = new Box(size, size * 0.6, size * 0.8);
+        body.setMaterial(new PhongMaterial(Color.SILVER));
+        Cylinder lens = new Cylinder(size * 0.3, size * 0.4);
+        lens.setMaterial(new PhongMaterial(Color.BLACK));
+        lens.setRotationAxis(Rotate.X_AXIS); lens.setRotate(90); lens.setTranslateZ(size * 0.5);
+        Cylinder arrow = new Cylinder(size * 0.05, size * 1.5);
+        arrow.setMaterial(new PhongMaterial(Color.LIME));
+        arrow.setRotationAxis(Rotate.X_AXIS); arrow.setRotate(90); arrow.setTranslateZ(size * 1.2);
+        g.getChildren().addAll(body, lens, arrow);
+        return g;
     }
 
     private void calculateWorldBounds(gltf.GLTFNode node, float[] parentTransform, double[] bounds) {
@@ -171,80 +150,45 @@ public class GLTFViewerExample extends Application {
         if (node.mesh != null) {
             for (gltf.mesh.GLTFMeshPrimitive primitive : node.mesh.primitives) {
                 if (primitive.attributes.positionsAccessor != null) {
-                    float[] min = primitive.attributes.positionsAccessor.min;
-                    float[] max = primitive.attributes.positionsAccessor.max;
+                    float[] min = primitive.attributes.positionsAccessor.min, max = primitive.attributes.positionsAccessor.max;
                     if (min != null && max != null) {
-                        float[][] corners = {
-                            {min[0], min[1], min[2]}, {min[0], min[1], max[2]},
-                            {min[0], max[1], min[2]}, {min[0], max[1], max[2]},
-                            {max[0], min[1], min[2]}, {max[0], min[1], max[2]},
-                            {max[0], max[1], min[2]}, {max[0], max[1], max[2]}
-                        };
-                        for (float[] corner : corners) {
-                            float[] worldPos = transformPoint(worldTransform, corner);
-                            bounds[0] = Math.min(bounds[0], worldPos[0]);
-                            bounds[1] = Math.min(bounds[1], worldPos[1]);
-                            bounds[2] = Math.min(bounds[2], worldPos[2]);
-                            bounds[3] = Math.max(bounds[3], worldPos[0]);
-                            bounds[4] = Math.max(bounds[4], worldPos[1]);
-                            bounds[5] = Math.max(bounds[5], worldPos[2]);
+                        float[][] corners = {{min[0],min[1],min[2]}, {max[0],max[1],max[2]}};
+                        for (float[] c : corners) {
+                            float[] p = transformPoint(worldTransform, c);
+                            bounds[0]=Math.min(bounds[0],p[0]); bounds[1]=Math.min(bounds[1],p[1]); bounds[2]=Math.min(bounds[2],p[2]);
+                            bounds[3]=Math.max(bounds[3],p[0]); bounds[4]=Math.max(bounds[4],p[1]); bounds[5]=Math.max(bounds[5],p[2]);
                         }
                     }
                 }
             }
         }
-        for (gltf.GLTFNode child : node.getChildren()) {
-            calculateWorldBounds(child, worldTransform, bounds);
-        }
+        for (gltf.GLTFNode child : node.getChildren()) calculateWorldBounds(child, worldTransform, bounds);
     }
 
     private float[] multiplyMatrices(float[] a, float[] b) {
         float[] res = new float[16];
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                res[i + j * 4] = 0;
-                for (int k = 0; k < 4; k++) {
-                    res[i + j * 4] += a[i + k * 4] * b[k + j * 4];
-                }
-            }
-        }
+        for (int i=0; i<4; i++) for (int j=0; j<4; j++) for (int k=0; k<4; k++) res[i+j*4] += a[i+k*4]*b[k+j*4];
         return res;
     }
 
     private float[] transformPoint(float[] m, float[] p) {
-        float w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
+        float w = m[3]*p[0] + m[7]*p[1] + m[11]*p[2] + m[15];
         if (Math.abs(w) < 0.000001) w = 1.0f;
-        return new float[]{
-            (m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12]) / w,
-            (m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13]) / w,
-            (m[2] * p[0] + m[6] * p[1] + m[10] * p[2] + m[14]) / w
-        };
+        return new float[]{(m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12])/w, (m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13])/w, (m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14])/w};
     }
 
     private boolean isDefaultMatrix(float[] m) {
-        if (m == null || m.length != 16) return true;
-        for (int i = 0; i < 16; i++) {
-            float expected = (i % 5 == 0) ? 1.0f : 0.0f;
-            if (Math.abs(m[i] - expected) > 0.000001) return false;
-        }
+        for (int i=0; i<16; i++) if (Math.abs(m[i]-((i%5==0)?1.0f:0.0f))>0.000001) return false;
         return true;
     }
 
     private float[] computeTRSMatrix(float[] t, float[] r, float[] s) {
-        float x = r[0], y = r[1], z = r[2], w = r[3];
-        float x2 = x + x, y2 = y + y, z2 = z + z;
-        float xx = x * x2, xy = x * y2, xz = x * z2;
-        float yy = y * y2, yz = y * z2, zz = z * z2;
-        float wx = w * x2, wy = w * y2, wz = w * z2;
+        float x=r[0], y=r[1], z=r[2], w=r[3], x2=x+x, y2=y+y, z2=z+z, xx=x*x2, xy=x*y2, xz=x*z2, yy=y*y2, yz=y*z2, zz=z*z2, wx=w*x2, wy=w*y2, wz=w*z2;
         float[] m = new float[16];
-        m[0] = (1 - (yy + zz)) * s[0]; m[1] = (xy + wz) * s[0]; m[2] = (xz - wy) * s[0]; m[3] = 0;
-        m[4] = (xy - wz) * s[1]; m[5] = (1 - (xx + zz)) * s[1]; m[6] = (yz + wx) * s[1]; m[7] = 0;
-        m[8] = (xz + wy) * s[2]; m[9] = (yz - wx) * s[2]; m[10] = (1 - (xx + yy)) * s[2]; m[11] = 0;
-        m[12] = t[0]; m[13] = t[1]; m[14] = t[2]; m[15] = 1;
+        m[0]=(1-(yy+zz))*s[0]; m[1]=(xy+wz)*s[0]; m[2]=(xz-wy)*s[0]; m[4]=(xy-wz)*s[1]; m[5]=(1-(xx+zz))*s[1]; m[6]=(yz+wx)*s[1];
+        m[8]=(xz+wy)*s[2]; m[9]=(yz-wx)*s[2]; m[10]=(1-(xx+yy))*s[2]; m[12]=t[0]; m[13]=t[1]; m[14]=t[2]; m[15]=1;
         return m;
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 }
