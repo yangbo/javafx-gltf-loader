@@ -8,6 +8,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Cylinder;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
@@ -29,8 +31,9 @@ public class GLTFViewerExample extends Application {
     public void start(Stage primaryStage) {
         try {
             // 1. 加载模型
-            java.net.URL resource = getClass().getResource("/robot/scene.gltf");
-            String gltfPath = (resource != null) ? java.nio.file.Paths.get(resource.toURI()).toString() : "src/main/resources/asset/robot/scene.gltf";
+            //java.net.URL resource = getClass().getResource("/robot/scene.gltf");
+            //String gltfPath = (resource != null) ? java.nio.file.Paths.get(resource.toURI()).toString() : "src/main/resources/asset/robot/scene.gltf";
+            String gltfPath = "c:\\projects\\仿真系统\\models\\railway_tracks\\scene.gltf";
             JFXGLTFAsset asset = new JFXGLTFAsset(gltfPath);
             Group modelGroup = asset.build3DScene(asset.scenes[0]);
 
@@ -81,7 +84,13 @@ public class GLTFViewerExample extends Application {
             // 5. 坐标轴 SubScene
             Group axisContent = createAxisGizmo(60);
             axisContent.getTransforms().addAll(rotateY, rotateX);
-            SubScene axisSubScene = new SubScene(new Group(axisContent, new AmbientLight(Color.WHITE)), 200, 200, true, SceneAntialiasing.BALANCED);
+            
+            // 将坐标轴内容平移到 SubScene 的中心 (100, 100)，避免原点在左上角
+            Group axisContainer = new Group(axisContent);
+            axisContainer.setTranslateX(100);
+            axisContainer.setTranslateY(100);
+            
+            SubScene axisSubScene = new SubScene(new Group(axisContainer, new AmbientLight(Color.WHITE)), 200, 200, true, SceneAntialiasing.BALANCED);
             axisSubScene.setCamera(new PerspectiveCamera(false));
 
             // 6. 容器与响应式布局
@@ -120,10 +129,36 @@ public class GLTFViewerExample extends Application {
 
     private Group createAxisGizmo(double size) {
         Group g = new Group();
-        Box xAxis = new Box(size, 2, 2); xAxis.setTranslateX(size/2); xAxis.setMaterial(new PhongMaterial(Color.RED));
-        Box yAxis = new Box(2, size, 2); yAxis.setTranslateY(size/2); yAxis.setMaterial(new PhongMaterial(Color.GREEN));
-        Box zAxis = new Box(2, 2, size); zAxis.setTranslateZ(size/2); zAxis.setMaterial(new PhongMaterial(Color.BLUE));
-        g.getChildren().addAll(xAxis, yAxis, zAxis);
+        
+        // X 轴 (红色)
+        Box xAxis = new Box(size, 2, 2);
+        xAxis.setTranslateX(size / 2);
+        xAxis.setMaterial(new PhongMaterial(Color.RED));
+        Text xLabel = new Text("X");
+        xLabel.setFill(Color.RED);
+        xLabel.setFont(Font.font(14));
+        xLabel.setTranslateX(size + 5);
+        
+        // Y 轴 (绿色)
+        Box yAxis = new Box(2, size, 2);
+        yAxis.setTranslateY(size / 2);
+        yAxis.setMaterial(new PhongMaterial(Color.GREEN));
+        Text yLabel = new Text("Y");
+        yLabel.setFill(Color.GREEN);
+        yLabel.setFont(Font.font(14));
+        yLabel.setTranslateY(size + 15);
+        
+        // Z 轴 (蓝色)
+        Box zAxis = new Box(2, 2, size);
+        zAxis.setTranslateZ(size / 2);
+        zAxis.setMaterial(new PhongMaterial(Color.BLUE));
+        Text zLabel = new Text("Z");
+        zLabel.setFill(Color.BLUE);
+        zLabel.setFont(Font.font(14));
+        zLabel.setTranslateZ(size + 5);
+        // 注意：在 2D Overlay 中 Text 不支持 Z 轴位移感官，但在 SubScene 中会随 Group 旋转
+        
+        g.getChildren().addAll(xAxis, yAxis, zAxis, xLabel, yLabel, zLabel);
         return g;
     }
 
