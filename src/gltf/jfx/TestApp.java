@@ -3,11 +3,8 @@ package gltf.jfx;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.shape.Box;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
-
-import static javafx.scene.input.KeyCode.W;
 
 public class TestApp extends Application {
 

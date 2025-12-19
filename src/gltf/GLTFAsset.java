@@ -174,7 +174,7 @@ public class GLTFAsset {
     public static void main(String[] args) throws IOException, GLTFException {
         GLTFAsset asset = new GLTFAsset("asset/scene.gltf");
 
-        System.out.println(""/*asset.buffers[0].bytes.length*/);
+        System.out.println(/*asset.buffers[0].bytes.length*/);
         //System.out.println(asset.bufferViews.length);
     }
 }
