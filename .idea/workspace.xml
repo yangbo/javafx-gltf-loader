@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="121a700e-d9a7-4db6-be8d-9080336edfe2" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/scene.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/scene.gltf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/textures/01___Def_baseColor.jpeg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/asset/textures/07___Def_baseColor.jpeg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/GLTFAsset.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/GLTFAsset.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/jfx/JFXGLTFAsset.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/jfx/JFXGLTFAsset.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/jfx/TestApp.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/jfx/TestApp.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/jfx/TestScene.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/GLTFLoader/gltf/jfx/TestScene.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/gltf/GLTFAsset.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/gltf/GLTFAsset.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/gltf/jfx/JFXGLTFAsset.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/gltf/jfx/JFXGLTFAsset.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/gltf/jfx/TestApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/gltf/jfx/TestApp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/gltf/jfx/TestScene.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/gltf/jfx/TestScene.java" afterDir="false" />
     </list>
-    <ignored path="$PROJECT_DIR$/out/" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
-    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,9 +27,6 @@
     </option>
     <expand />
     <select />
-  </component>
-  <component name="FavoritesManager">
-    <favorites_list name="GLTFLoader" />
   </component>
   <component name="FileEditorManager">
     <leaf>
@@ -162,11 +149,14 @@
       <select />
     </treeState>
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 2
+}]]></component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="width" value="1387" />
     <option name="height" value="789" />
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectId" id="373MKV0tSOOde6PvFtIvccCzwaw" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
@@ -255,18 +245,24 @@
       <pane id="AndroidView" />
     </panes>
   </component>
-  <component name="PropertiesComponent">
-    <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://C:/Users/Laurier/IdeaProjects/GLTFLoader/src/gltf/jfx/TestScene.java" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1551646526887" />
-    <property name="last_opened_file_path" value="C:/jfx/lib" />
-    <property name="nodejs_package_manager_path" value="npm" />
-    <property name="project.structure.last.edited" value="Project" />
-    <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Java" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.GLTFAsset.executor": "Run",
+    "Application.GLTFViewerExample.executor": "Debug",
+    "Application.JFXGLTFAsset.executor": "Run",
+    "Application.TestApp.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "E:/lab/javafx/javafx-gltf-loader",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Laurier\IdeaProjects\GLTFLoader" />
@@ -277,19 +273,7 @@
       <recent name="gltf.material" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
-  <component name="RunManager" selected="Application.JFXGLTFAsset">
+  <component name="RunManager" selected="Application.GLTFViewerExample">
     <configuration name="GLTFAsset" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="gltf.GLTFAsset" />
       <module name="GLTFLoader" />
@@ -300,6 +284,9 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <configuration name="GLTFLoader" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="gltf.GLTFLoader" />
@@ -311,6 +298,23 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GLTFViewerExample" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="gltf.jfx.GLTFViewerExample" />
+      <module name="GLTFLoader" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="gltf.jfx.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <configuration name="JFXGLTFAsset" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="gltf.jfx.JFXGLTFAsset" />
@@ -322,55 +326,57 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="gltf.jfx.TestApp" />
+      <module name="GLTFLoader" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="gltf.jfx.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
       <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="-ea" />
-      <option name="PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="%MODULE_WORKING_DIR%" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <patterns />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
-    <configuration default="true" type="TestNG" factoryName="TestNG">
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="SUITE_NAME" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="GROUP_NAME" />
+    <configuration default="true" type="TestNG">
       <option name="TEST_OBJECT" value="CLASS" />
-      <option name="VM_PARAMETERS" value="-ea" />
-      <option name="PARAMETERS" />
       <option name="WORKING_DIRECTORY" value="%MODULE_WORKING_DIR%" />
-      <option name="OUTPUT_DIRECTORY" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <option name="USE_DEFAULT_REPORTERS" value="false" />
-      <option name="PROPERTIES_FILE" />
       <properties />
       <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
     </configuration>
     <list>
+      <item itemvalue="Application.GLTFViewerExample" />
+      <item itemvalue="Application.TestApp" />
       <item itemvalue="Application.GLTFLoader" />
       <item itemvalue="Application.GLTFAsset" />
       <item itemvalue="Application.JFXGLTFAsset" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.GLTFViewerExample" />
+        <item itemvalue="Application.TestApp" />
         <item itemvalue="Application.JFXGLTFAsset" />
         <item itemvalue="Application.GLTFAsset" />
         <item itemvalue="Application.GLTFLoader" />
@@ -430,20 +436,15 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
-  <component name="VcsContentAnnotationSettings">
-    <option name="myLimit" value="2678400000" />
-  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/gltf/accessor/GLTFAccessor.java</url>
           <line>134</line>
-          <properties />
           <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="3" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">

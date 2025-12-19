@@ -14,7 +14,7 @@ public class TestApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene =  new TestScene(new Group());
-        JFXGLTFAsset asset = new JFXGLTFAsset("asset/masterchief/scene.gltf");
+        JFXGLTFAsset asset = new JFXGLTFAsset("asset/scene.gltf");
         Group asset3D = asset.build3DScene(asset.scenes[0]);
         ((TestScene) scene).root().getChildren().add(asset3D);
         scene.setOnKeyPressed((e) -> {

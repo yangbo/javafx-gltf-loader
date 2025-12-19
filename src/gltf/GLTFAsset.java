@@ -1,6 +1,5 @@
 package gltf;
 
-import com.sun.corba.se.impl.io.OptionalDataException;
 import gltf.accessor.GLTFAccessor;
 import gltf.buffer.GLTFBuffer;
 import gltf.buffer.GLTFBufferView;
