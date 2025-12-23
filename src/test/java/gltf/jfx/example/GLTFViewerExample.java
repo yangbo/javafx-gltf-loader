@@ -33,8 +33,8 @@ public class GLTFViewerExample extends Application {
             // 1. 加载模型
             //java.net.URL resource = getClass().getResource("/robot/scene.gltf");
             //String gltfPath = (resource != null) ? java.nio.file.Paths.get(resource.toURI()).toString() : "src/main/resources/asset/robot/scene.gltf";
-             String gltfPath = "c:\\projects\\仿真系统\\models\\railway_tracks\\scene.gltf";
-            // String gltfPath = "c:\\projects\\仿真系统\\TTAP\\05-3D模型\\train-wheels.gltf";
+//             String gltfPath = "c:\\projects\\仿真系统\\models\\railway_tracks\\scene.gltf";
+            String gltfPath = "c:\\projects\\仿真系统\\TTAP\\05-3D模型\\train-wheels.gltf";
             JFXGLTFAsset asset = new JFXGLTFAsset(gltfPath);
             Group modelGroup = asset.build3DScene(asset.scenes[0]);
 
@@ -52,6 +52,11 @@ public class GLTFViewerExample extends Application {
             double sizeX = bounds[3] - bounds[0];
             double sizeY = bounds[4] - bounds[1];
             double sizeZ = bounds[5] - bounds[2];
+
+            System.out.println("DEBUG: Bounds: [" + bounds[0] + ", " + bounds[1] + ", " + bounds[2] + "] to [" + bounds[3] + ", " + bounds[4] + ", " + bounds[5] + "]");
+            System.out.println("DEBUG: Size: " + sizeX + ", " + sizeY + ", " + sizeZ);
+            System.out.println("DEBUG: Center: " + centerX + ", " + centerY + ", " + centerZ);
+            System.out.println("DEBUG: Model Radius: " + modelRadius);
 
             modelGroup.setTranslateX(-centerX);
             modelGroup.setTranslateY(-centerY);
@@ -78,7 +83,7 @@ public class GLTFViewerExample extends Application {
             mainRoot.getChildren().add(pl);
 
             SubScene mainSubScene = new SubScene(mainRoot, 1024, 768, true, SceneAntialiasing.BALANCED);
-            mainSubScene.setFill(Color.web("#222222"));
+            mainSubScene.setFill(Color.web("gray"));
             
             PerspectiveCamera godCamera = new PerspectiveCamera(true);
             godCamera.setNearClip(0.1);

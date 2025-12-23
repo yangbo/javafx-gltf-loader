@@ -103,32 +103,19 @@ public class JFXGLTFAsset extends GLTFAsset {
 
     public static TriangleMesh GLTFMeshPrimitiveToTriangleMesh(GLTFMeshPrimitive primitive) {
         TriangleMesh returnVal = new TriangleMesh();
-        //TODO
-        returnVal.getPoints().addAll(
-                primitive.attributes.positionsAccessor.data
-        );
-        if (primitive.indicesAccessor != null) {
-            if (primitive.indicesAccessor instanceof GLTFIntAccessor) {
-                int[] data = ((GLTFIntAccessor) primitive.indicesAccessor).data;
-                for (int i = 0; i < data.length; i++) {
-                    returnVal.getFaces().addAll(
-                            data[i],
-                            data[i]//TODO use the right texCoord (for the second argument)
-                    );
-                }
-            } else if (primitive.indicesAccessor instanceof GLTFShortAccessor) {
-                short[] data = ((GLTFShortAccessor) primitive.indicesAccessor).data;
-                for (int i = 0; i < data.length; i++) {
-                    returnVal.getFaces().addAll(
-                            data[i],
-                            data[i]//TODO use the right texCoord (for the second argument)
-                    );
-                }
-            }
+        
+        if (primitive.attributes.positionsAccessor != null) {
+            returnVal.getPoints().addAll(
+                    primitive.attributes.positionsAccessor.data
+            );
         } else {
-            System.out.println("No indices were given for the faces.");
-            //TODO fill in the indices array if no indices were given.
+             System.out.println("DEBUG: primitive.attributes.positionsAccessor is NULL!");
         }
+        
+        System.out.println("DEBUG: TriangleMesh Points count: " + returnVal.getPoints().size());
+
+        // 处理纹理坐标
+        boolean hasTexCoords = false;
         if (primitive.attributes.texCoords0Accessor != null) {
             //TODO apply correct texCoord: TEXCOORD_0 or TEXCOORD_1 according to texCoord property.
             //TODO apply correct data types (UNSIGNED_BYTE, FLOAT, UNSIGNED_SHORT)
@@ -137,7 +124,41 @@ public class JFXGLTFAsset extends GLTFAsset {
                             primitive.attributes.texCoords0Accessor)
                             .data
             );
+            hasTexCoords = true;
+        } else {
+            // 如果没有纹理坐标，添加一个默认的 (0,0) 以防止索引越界
+            returnVal.getTexCoords().addAll(0, 0);
         }
+
+        if (primitive.indicesAccessor != null) {
+            if (primitive.indicesAccessor instanceof GLTFIntAccessor) {
+                int[] data = ((GLTFIntAccessor) primitive.indicesAccessor).data;
+                System.out.println("DEBUG: Indices (Int) count: " + data.length);
+                for (int i = 0; i < data.length; i++) {
+                    int tIndex = hasTexCoords ? data[i] : 0;
+                    returnVal.getFaces().addAll(
+                            data[i],
+                            tIndex
+                    );
+                }
+            } else if (primitive.indicesAccessor instanceof GLTFShortAccessor) {
+                short[] data = ((GLTFShortAccessor) primitive.indicesAccessor).data;
+                System.out.println("DEBUG: Indices (Short) count: " + data.length);
+                for (int i = 0; i < data.length; i++) {
+                    int tIndex = hasTexCoords ? data[i] : 0;
+                    returnVal.getFaces().addAll(
+                            data[i],
+                            tIndex
+                    );
+                }
+            }
+        } else {
+            System.out.println("No indices were given for the faces.");
+            //TODO fill in the indices array if no indices were given.
+        }
+        
+        System.out.println("DEBUG: TriangleMesh Faces count (indices/2): " + returnVal.getFaces().size() / 2);
+        
         return returnVal;
     }
 
@@ -150,9 +171,16 @@ public class JFXGLTFAsset extends GLTFAsset {
                             primitive
                     )
             );
-            mv.setMaterial(
-                    materials[primitive.materialIdx]
-            );
+            
+            // 设置 CullFace 为 NONE 以防止背面剔除导致不可见
+            mv.setCullFace(javafx.scene.shape.CullFace.NONE);
+
+            if (materials != null && primitive.materialIdx >= 0 && primitive.materialIdx < materials.length) {
+                mv.setMaterial(materials[primitive.materialIdx]);
+            } else {
+                // 默认红色材质，用于排查是否因材质缺失导致不可见
+                mv.setMaterial(new PhongMaterial(Color.RED));
+            }
             returnVal.getChildren().add(mv);
         }
 
