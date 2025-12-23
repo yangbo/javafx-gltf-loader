@@ -4,6 +4,8 @@ import gltf.GLTFAsset;
 import gltf.GLTFNode;
 import gltf.GLTFScene;
 import gltf.accessor.GLTFFloatAccessor;
+import gltf.accessor.GLTFIntAccessor;
+import gltf.accessor.GLTFShortAccessor;
 import gltf.exception.GLTFException;
 import gltf.material.GLTFMaterial;
 import gltf.mesh.GLTFMesh;
@@ -106,12 +108,22 @@ public class JFXGLTFAsset extends GLTFAsset {
                 primitive.attributes.positionsAccessor.data
         );
         if (primitive.indicesAccessor != null) {
-            int[] data = primitive.indicesAccessor.data;
-            for (int i = 0; i < data.length; i++) {
-                returnVal.getFaces().addAll(
-                        data[i],
-                        data[i]//TODO use the right texCoord (for the second argument)
-                );
+            if (primitive.indicesAccessor instanceof GLTFIntAccessor) {
+                int[] data = ((GLTFIntAccessor) primitive.indicesAccessor).data;
+                for (int i = 0; i < data.length; i++) {
+                    returnVal.getFaces().addAll(
+                            data[i],
+                            data[i]//TODO use the right texCoord (for the second argument)
+                    );
+                }
+            } else if (primitive.indicesAccessor instanceof GLTFShortAccessor) {
+                short[] data = ((GLTFShortAccessor) primitive.indicesAccessor).data;
+                for (int i = 0; i < data.length; i++) {
+                    returnVal.getFaces().addAll(
+                            data[i],
+                            data[i]//TODO use the right texCoord (for the second argument)
+                    );
+                }
             }
         } else {
             System.out.println("No indices were given for the faces.");

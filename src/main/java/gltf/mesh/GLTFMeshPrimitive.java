@@ -15,7 +15,7 @@ public class GLTFMeshPrimitive {
     public final int materialIdx;
     public final GLTFMaterial material;
     public final int meshMode;
-    public final GLTFIntAccessor indicesAccessor;
+    public final GLTFAccessor indicesAccessor;
     public GLTFMeshPrimitive(GLTFMeshPrimitiveAttributes attributes,
                              int indicesAccessorIdx,
                              int materialIdx,
@@ -26,13 +26,15 @@ public class GLTFMeshPrimitive {
 
         this.indicesAccessorIdx = indicesAccessorIdx;
         this.indicesAccessor = this.indicesAccessorIdx != -1 ?
-            (GLTFIntAccessor)accessors[indicesAccessorIdx]
+            accessors[indicesAccessorIdx]
                 .assertType(
                         new GLTFAccessorType[]{
                                 GLTFAccessorType.SCALAR
                         },
                         new GLTFComponentType[]{
-                                GLTFComponentType.UNSIGNED_INT
+                                GLTFComponentType.UNSIGNED_INT,
+                                GLTFComponentType.UNSIGNED_SHORT,
+                                GLTFComponentType.SHORT
                         })
             : null;
 

@@ -33,7 +33,8 @@ public class GLTFViewerExample extends Application {
             // 1. 加载模型
             //java.net.URL resource = getClass().getResource("/robot/scene.gltf");
             //String gltfPath = (resource != null) ? java.nio.file.Paths.get(resource.toURI()).toString() : "src/main/resources/asset/robot/scene.gltf";
-            String gltfPath = "c:\\projects\\仿真系统\\models\\railway_tracks\\scene.gltf";
+             String gltfPath = "c:\\projects\\仿真系统\\models\\railway_tracks\\scene.gltf";
+            // String gltfPath = "c:\\projects\\仿真系统\\TTAP\\05-3D模型\\train-wheels.gltf";
             JFXGLTFAsset asset = new JFXGLTFAsset(gltfPath);
             Group modelGroup = asset.build3DScene(asset.scenes[0]);
 
@@ -47,6 +48,10 @@ public class GLTFViewerExample extends Application {
             double centerZ = (bounds[2] + bounds[5]) / 2.0;
             double modelRadius = Math.sqrt(Math.pow(bounds[3]-bounds[0], 2) + Math.pow(bounds[4]-bounds[1], 2) + Math.pow(bounds[5]-bounds[2], 2)) / 2.0;
             if (modelRadius < 1) modelRadius = 100;
+
+            double sizeX = bounds[3] - bounds[0];
+            double sizeY = bounds[4] - bounds[1];
+            double sizeZ = bounds[5] - bounds[2];
 
             modelGroup.setTranslateX(-centerX);
             modelGroup.setTranslateY(-centerY);
@@ -94,8 +99,14 @@ public class GLTFViewerExample extends Application {
             axisSubScene.setCamera(new PerspectiveCamera(false));
 
             // 6. 容器与响应式布局
+            Text infoText = new Text(String.format("Model Size:\nX: %.2f\nY: %.2f\nZ: %.2f", sizeX, sizeY, sizeZ));
+            infoText.setFill(Color.WHITE);
+            infoText.setFont(Font.font("Consolas", 14));
+            StackPane.setAlignment(infoText, Pos.TOP_LEFT);
+            StackPane.setMargin(infoText, new javafx.geometry.Insets(10));
+
             StackPane rootPane = new StackPane();
-            rootPane.getChildren().addAll(mainSubScene, axisSubScene);
+            rootPane.getChildren().addAll(mainSubScene, axisSubScene, infoText);
             StackPane.setAlignment(axisSubScene, Pos.TOP_RIGHT);
 
             // 绑定尺寸，防止模型消失
@@ -114,8 +125,18 @@ public class GLTFViewerExample extends Application {
                 rotateX.setAngle(rotateX.getAngle() - mouseDeltaY * 0.2);
             });
             scene.setOnScroll(se -> {
-                double zoomFactor = se.getDeltaY() > 0 ? 0.9 : 1.1;
-                godCamera.setTranslateZ(godCamera.getTranslateZ() * zoomFactor);
+                if (se.isControlDown()) {
+                    double scaleFactor = se.getDeltaY() > 0 ? 1.1 : 0.9;
+                    double newScale = modelGroup.getScaleX() * scaleFactor;
+                    modelGroup.setScaleX(newScale);
+                    modelGroup.setScaleY(newScale);
+                    modelGroup.setScaleZ(newScale);
+                    infoText.setText(String.format("Model Size:\nX: %.2f\nY: %.2f\nZ: %.2f", 
+                        sizeX * newScale, sizeY * newScale, sizeZ * newScale));
+                } else {
+                    double zoomFactor = se.getDeltaY() > 0 ? 0.9 : 1.1;
+                    godCamera.setTranslateZ(godCamera.getTranslateZ() * zoomFactor);
+                }
             });
 
             primaryStage.setTitle("GLTF Viewer - Visible Camera and Axis Gizmo");
