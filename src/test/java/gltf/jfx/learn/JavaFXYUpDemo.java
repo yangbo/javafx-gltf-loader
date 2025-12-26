@@ -17,7 +17,9 @@ import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
 /**
- * 演示 JavaFX 3D 坐标系从 Y-down (默认) 转换为 Y-up 的三种方式
+ * 演示 JavaFX 3D 坐标系从 Y-down (默认) 转换为 Y-up 的三种方式。
+ *
+ * 旋转相机后看不到任何物体的原因是：
  */
 public class JavaFXYUpDemo extends Application {
 
@@ -32,7 +34,7 @@ public class JavaFXYUpDemo extends Application {
     
     private Rotate rootRotateX = new Rotate(0, Rotate.X_AXIS);
     private Rotate cameraPivotRotateX = new Rotate(0, Rotate.X_AXIS);
-    private Rotate cameraDirectRotateX = new Rotate(0, Rotate.X_AXIS);
+    private Rotate cameraDirectRotateX = new Rotate(0, Rotate.Z_AXIS);
 
     // 鼠标旋转变换
     private Rotate mouseRotateX = new Rotate(0, Rotate.X_AXIS);
