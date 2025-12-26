@@ -25,6 +25,8 @@ public class JavaFXCameraFOVExample extends Application {
     private Slider fovSlider;
     private Slider rotateYSlider;
     private Slider rotateXSlider;
+    private Slider nearClipSlider;
+    private Slider farClipSlider;
     private Label fovValueLabel;
     private Label lensTypeLabel;
     private Label cameraInfoLabel; // HUD 标签
@@ -42,7 +44,7 @@ public class JavaFXCameraFOVExample extends Application {
         camera.setTranslateZ(-500); // 将相机后退一点，以便看清场景
 
         // 3. 创建 SubScene 用于 3D 渲染
-        SubScene subScene = new SubScene(sceneRoot, 800, 600, true, SceneAntialiasing.BALANCED);
+        SubScene subScene = new SubScene(sceneRoot, 1000, 600, true, SceneAntialiasing.BALANCED);
         subScene.setFill(Color.ALICEBLUE);
         subScene.setCamera(camera);
 
@@ -64,10 +66,24 @@ public class JavaFXCameraFOVExample extends Application {
         root.setCenter(uiOverlay);
         root.setBottom(controls);
 
-        Scene scene = new Scene(root, 800, 750);
-        primaryStage.setTitle("JavaFX PerspectiveCamera FOV 演示");
+        Scene scene = new Scene(root, 1024, 850);
+        primaryStage.setTitle("JavaFX PerspectiveCamera 参数演示 (FOV, Clipping, Rotation, Zoom)");
+
+        // 添加键盘控制：上下按键修改相机 Z 轴位置（前进/后退）
+        scene.setOnKeyPressed(event -> {
+            double step = 20;
+            switch (event.getCode()) {
+                case UP -> camera.setTranslateZ(camera.getTranslateZ() + step);
+                case DOWN -> camera.setTranslateZ(camera.getTranslateZ() - step);
+            }
+            updateCameraHUD();
+        });
+
         primaryStage.setScene(scene);
         primaryStage.show();
+        
+        // 确保场景获取焦点以接收按键事件
+        subScene.requestFocus();
     }
 
     private void setup3DScene(Group root) {
@@ -129,6 +145,26 @@ public class JavaFXCameraFOVExample extends Application {
         rightWall.setMaterial(new PhongMaterial(Color.DARKBLUE));
         
         root.getChildren().addAll(leftWall, rightWall);
+
+        // 在相机非常近的地方添加物体，以便演示近裁剪面效果
+        // 相机初始 TranslateZ 为 -500，相对于原点
+        // 我们在相机正前方稍微偏左下的位置放两个物体
+        
+        // 近处的小立方体
+        Box nearBox = new Box(30, 30, 30);
+        nearBox.setTranslateX(-80);
+        nearBox.setTranslateY(80);
+        nearBox.setTranslateZ(-400); // 相机在 -500，这个物体在 -400，距离相机仅 100 单位
+        nearBox.setMaterial(new PhongMaterial(Color.YELLOW));
+        
+        // 近处的小球
+        Sphere nearSphere = new Sphere(20);
+        nearSphere.setTranslateX(-120);
+        nearSphere.setTranslateY(120);
+        nearSphere.setTranslateZ(-350); // 距离相机 150 单位
+        nearSphere.setMaterial(new PhongMaterial(Color.CYAN));
+        
+        root.getChildren().addAll(nearBox, nearSphere);
     }
 
     private VBox createControls() {
@@ -212,7 +248,40 @@ public class JavaFXCameraFOVExample extends Application {
             updateCameraHUD();
         });
 
-        vbox.getChildren().addAll(sliderBox, rotateYBox, rotateXBox, lensTypeLabel, buttonBox);
+        // 近裁剪面控制 (Near Clip)
+        HBox nearClipBox = new HBox(10);
+        nearClipBox.setAlignment(Pos.CENTER);
+        Label nearClipLabel = new Label("近裁剪面 (Near Clip):");
+        nearClipSlider = new Slider(0.1, 500, 0.1);
+        nearClipSlider.setPrefWidth(400);
+        Label nearClipValue = new Label("0.1");
+        nearClipBox.getChildren().addAll(nearClipLabel, nearClipSlider, nearClipValue);
+
+        // 远裁剪面控制 (Far Clip)
+        HBox farClipBox = new HBox(10);
+        farClipBox.setAlignment(Pos.CENTER);
+        Label farClipLabel = new Label("远裁剪面 (Far Clip):");
+        farClipSlider = new Slider(500, 10000, 10000);
+        farClipSlider.setPrefWidth(400);
+        Label farClipValue = new Label("10000.0");
+        farClipBox.getChildren().addAll(farClipLabel, farClipSlider, farClipValue);
+
+        nearClipSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            camera.setNearClip(newVal.doubleValue());
+            nearClipValue.setText(String.format("%.1f", newVal.doubleValue()));
+            updateCameraHUD();
+        });
+
+        farClipSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            camera.setFarClip(newVal.doubleValue());
+            farClipValue.setText(String.format("%.1f", newVal.doubleValue()));
+            updateCameraHUD();
+        });
+
+        Label hintLabel = new Label("提示：使用键盘 [↑/↓] 按键可前后移动相机 (改变 Z 轴)");
+        hintLabel.setStyle("-fx-text-fill: #666; -fx-font-style: italic;");
+
+        vbox.getChildren().addAll(sliderBox, rotateYBox, rotateXBox, nearClipBox, farClipBox, lensTypeLabel, buttonBox, hintLabel);
         return vbox;
     }
 
@@ -227,12 +296,12 @@ public class JavaFXCameraFOVExample extends Application {
                 }
             }
             String info = String.format(
-                    "相机 HUD\n" +
-                    "位置: [X: %.2f, Y: %.2f, Z: %.2f]\n" +
-                    "旋转: [Pitch: %.2f°, Yaw: %.2f°]\n" +
-                    "视角 (FOV): %.2f°\n" +
-                    "近剪裁面: %.1f\n" +
-                    "远剪裁面: %.1f",
+                    """
+                    相机位置: [X: %.2f, Y: %.2f, Z: %.2f]
+                    旋转: [Pitch: %.2f°, Yaw: %.2f°]
+                    视角 (FOV): %.2f°
+                    近剪裁面: %.1f
+                    远剪裁面: %.1f""",
                     camera.getTranslateX(), camera.getTranslateY(), camera.getTranslateZ(),
                     rx, ry,
                     camera.getFieldOfView(),
