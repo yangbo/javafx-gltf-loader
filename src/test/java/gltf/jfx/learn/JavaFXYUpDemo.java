@@ -12,7 +12,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
-import javafx.scene.shape.Cylinder;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
@@ -34,7 +33,7 @@ public class JavaFXYUpDemo extends Application {
     
     private Rotate rootRotateX = new Rotate(0, Rotate.X_AXIS);
     private Rotate cameraPivotRotateX = new Rotate(0, Rotate.X_AXIS);
-    private Rotate cameraDirectRotateX = new Rotate(0, Rotate.Z_AXIS);
+    private Rotate cameraDirectRotateZ = new Rotate(0, Rotate.Z_AXIS);
 
     // 鼠标旋转变换
     private Rotate mouseRotateX = new Rotate(0, Rotate.X_AXIS);
@@ -58,7 +57,7 @@ public class JavaFXYUpDemo extends Application {
         // 将变换添加到对应的节点
         rootContent.getTransforms().add(rootRotateX);
         cameraPivot.getTransforms().add(cameraPivotRotateX);
-        camera.getTransforms().add(cameraDirectRotateX);
+        camera.getTransforms().add(cameraDirectRotateZ);
 
         // 3. 布局
         SubScene subScene = new SubScene(new Group(rootContent, cameraPivot), SCENE_WIDTH, SCENE_HEIGHT, true, SceneAntialiasing.BALANCED);
@@ -199,7 +198,7 @@ public class JavaFXYUpDemo extends Application {
             } else if (newVal == rbRotatePivot) {
                 cameraPivotRotateX.setAngle(180);
             } else if (newVal == rbRotateCamera) {
-                cameraDirectRotateX.setAngle(180);
+                cameraDirectRotateZ.setAngle(180);
             }
         });
 
@@ -223,7 +222,7 @@ public class JavaFXYUpDemo extends Application {
         double tx = camera.getTranslateX();
         double ty = camera.getTranslateY();
         double tz = camera.getTranslateZ();
-        double localRotate = cameraDirectRotateX.getAngle();
+        double localRotate = cameraDirectRotateZ.getAngle();
 
         // 2. 世界坐标系中的状态
         // 世界位置 (把相机本地原点转到世界)
@@ -249,7 +248,7 @@ public class JavaFXYUpDemo extends Application {
     private void resetTransforms() {
         rootRotateX.setAngle(0);
         cameraPivotRotateX.setAngle(0);
-        cameraDirectRotateX.setAngle(0);
+        cameraDirectRotateZ.setAngle(0);
     }
 
     private double mousePosX, mousePosY;

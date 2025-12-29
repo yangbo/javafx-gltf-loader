@@ -31,10 +31,11 @@ public class GLTFViewerExample extends Application {
     public void start(Stage primaryStage) {
         try {
             // 1. 加载模型
-            //java.net.URL resource = getClass().getResource("/robot/scene.gltf");
-            //String gltfPath = (resource != null) ? java.nio.file.Paths.get(resource.toURI()).toString() : "src/main/resources/asset/robot/scene.gltf";
-//             String gltfPath = "c:\\projects\\仿真系统\\models\\railway_tracks\\scene.gltf";
-            String gltfPath = "c:\\projects\\仿真系统\\TTAP\\05-3D模型\\train-wheels.gltf";
+//            java.net.URL resource = getClass().getResource("/robot/scene.gltf");
+//            String gltfPath = (resource != null) ? java.nio.file.Paths.get(resource.toURI()).toString() : "src/main/resources/asset/robot/scene.gltf";
+
+             String gltfPath = "c:\\projects\\仿真系统\\models\\railway_tracks\\scene.gltf";
+//            String gltfPath = "c:\\projects\\仿真系统\\TTAP\\05-3D模型\\train-wheels.gltf";
             JFXGLTFAsset asset = new JFXGLTFAsset(gltfPath);
             Group modelGroup = asset.build3DScene(asset.scenes[0]);
 
