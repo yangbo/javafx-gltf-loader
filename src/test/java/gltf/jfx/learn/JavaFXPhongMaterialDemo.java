@@ -25,6 +25,7 @@ public class JavaFXPhongMaterialDemo extends Application {
 
     private PhongMaterial material;
     private Sphere targetSphere;
+    private AmbientLight ambientLight;
     
     // 动态生成的贴图
     private Image diffuseMap;
@@ -70,7 +71,7 @@ public class JavaFXPhongMaterialDemo extends Application {
         pointLight.setTranslateY(-400);
         pointLight.setTranslateZ(-400);
 
-        AmbientLight ambientLight = new AmbientLight(Color.rgb(60, 60, 60));
+        ambientLight = new AmbientLight(Color.rgb(60, 60, 60));
 
         // 3D 场景
         Group sceneRoot = new Group(world, pointLight, ambientLight);
@@ -186,6 +187,12 @@ public class JavaFXPhongMaterialDemo extends Application {
             createCheckBox("启用自发光贴图 (Emissive)", b -> material.setSelfIlluminationMap(b ? selfIllumMap : null))
         ));
 
+        // --- 灯光设置 ---
+        TitledPane p4 = new TitledPane("灯光 (Lighting)", new VBox(5,
+            new Label("环境光颜色:"),
+            createColorPicker(Color.rgb(60, 60, 60), c -> ambientLight.setColor(c))
+        ));
+
         // --- 预设 ---
         Button waterBtn = new Button("模拟水面预设");
         waterBtn.setMaxWidth(Double.MAX_VALUE);
@@ -201,9 +208,10 @@ public class JavaFXPhongMaterialDemo extends Application {
             material.setSpecularMap(null);
             material.setBumpMap(null);
             material.setSelfIlluminationMap(null);
+            ambientLight.setColor(Color.rgb(60, 60, 60));
         });
 
-        panel.getChildren().addAll(p1, p2, p3, new Separator(), waterBtn, resetBtn);
+        panel.getChildren().addAll(p1, p2, p3, p4, new Separator(), waterBtn, resetBtn);
         
         // 确保所有 Label 在 TitledPane 中也是白色的
         panel.lookupAll(".label").forEach(n -> n.setStyle("-fx-text-fill: white;"));
