@@ -30,7 +30,7 @@ public class JavaFXPhongMaterialDemo extends Application {
     // 动态生成的贴图
     private Image diffuseMap;
     private Image specularMap;
-    private Image bumpMap;
+    private Image normalMap; // JavaFX bumpMap 实际上需要 Normal Map (蓝紫色法线贴图)
     private Image selfIllumMap;
 
     // 旋转控制
@@ -139,15 +139,30 @@ public class JavaFXPhongMaterialDemo extends Application {
         }
         specularMap = spec;
 
-        // 3. 凹凸贴图：垂直条纹
-        WritableImage bump = new WritableImage(size, size);
+        // 3. 凹凸贴图 (实为法线贴图)：生成蓝紫色的垂直条纹法线
+        // 计算原理：假设高度 h = sin(x * 0.2)，则斜率 dh/dx = 0.2 * cos(x * 0.2)
+        // 法线向量 N = normalize(-dh/dx, -dh/dy, 1)
+        WritableImage normal = new WritableImage(size, size);
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                double val = Math.sin(x * 0.2) * 0.5 + 0.5;
-                bump.getPixelWriter().setColor(x, y, Color.gray(val));
+                double slopeX = 0.2 * Math.cos(x * 0.2);
+                double slopeY = 0;
+                
+                // 归一化法线
+                double len = Math.sqrt(slopeX * slopeX + slopeY * slopeY + 1.0);
+                double nx = -slopeX / len;
+                double ny = -slopeY / len;
+                double nz = 1.0 / len;
+                
+                // 映射到颜色范围 [0, 1]
+                normal.getPixelWriter().setColor(x, y, Color.color(
+                    nx * 0.5 + 0.5,
+                    ny * 0.5 + 0.5,
+                    nz * 0.5 + 0.5
+                ));
             }
         }
-        bumpMap = bump;
+        normalMap = normal;
 
         // 4. 自发光贴图：网格线
         WritableImage emissive = new WritableImage(size, size);
@@ -190,7 +205,7 @@ public class JavaFXPhongMaterialDemo extends Application {
 
         // --- 凹凸与自发光 ---
         TitledPane p3 = new TitledPane("贴图 (Maps)", new VBox(5,
-            createCheckBox("启用凹凸贴图 (Bump Map)", b -> material.setBumpMap(b ? bumpMap : null)),
+            createCheckBox("启用凹凸贴图 (Normal Map)", b -> material.setBumpMap(b ? normalMap : null)),
             createCheckBox("启用自发光贴图 (Emissive)", b -> material.setSelfIlluminationMap(b ? selfIllumMap : null))
         ));
 
@@ -236,7 +251,7 @@ public class JavaFXPhongMaterialDemo extends Application {
         container.getChildren().addAll(
             createTextureView("Diffuse Map", diffuseMap),
             createTextureView("Specular Map", specularMap),
-            createTextureView("Bump Map", bumpMap),
+            createTextureView("Normal Map (Bump)", normalMap),
             createTextureView("Emissive Map", selfIllumMap)
         );
 
@@ -271,16 +286,30 @@ public class JavaFXPhongMaterialDemo extends Application {
         material.setSpecularMap(null);
         material.setSelfIlluminationMap(null);
         
-        // 生成一个类似波纹的噪声贴图作为凹凸贴图
+        // 生成波动的法线贴图来模拟水面
         int size = 256;
-        WritableImage waterBump = new WritableImage(size, size);
+        WritableImage waterNormal = new WritableImage(size, size);
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                double val = Math.sin(x * 0.1) * Math.cos(y * 0.1) * 0.5 + 0.5;
-                waterBump.getPixelWriter().setColor(x, y, Color.gray(val));
+                // 假设高度函数为 h = 2.0 * sin(x * 0.15 + y * 0.15)
+                double freq = 0.15;
+                double amp = 2.0;
+                double slopeX = amp * freq * Math.cos(x * freq + y * freq);
+                double slopeY = amp * freq * Math.cos(x * freq + y * freq);
+                
+                double len = Math.sqrt(slopeX * slopeX + slopeY * slopeY + 1.0);
+                double nx = -slopeX / len;
+                double ny = -slopeY / len;
+                double nz = 1.0 / len;
+                
+                waterNormal.getPixelWriter().setColor(x, y, Color.color(
+                    nx * 0.5 + 0.5,
+                    ny * 0.5 + 0.5,
+                    nz * 0.5 + 0.5
+                ));
             }
         }
-        material.setBumpMap(waterBump);
+        material.setBumpMap(waterNormal);
     }
 
     private ColorPicker createColorPicker(Color initial, java.util.function.Consumer<Color> callback) {
