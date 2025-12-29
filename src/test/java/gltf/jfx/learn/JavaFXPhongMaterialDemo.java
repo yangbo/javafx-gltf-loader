@@ -97,8 +97,15 @@ public class JavaFXPhongMaterialDemo extends Application {
         subScene.widthProperty().bind(subSceneContainer.widthProperty());
         subScene.heightProperty().bind(subSceneContainer.heightProperty());
         
-        HBox mainRoot = new HBox(subSceneContainer, scrollPane);
-        HBox.setHgrow(subSceneContainer, Priority.ALWAYS);
+        // 底部贴图预览
+        HBox texturePreviews = createTexturePreviewPanel();
+        
+        // 垂直排列：3D 视图在上，贴图预览在下
+        VBox leftLayout = new VBox(subSceneContainer, texturePreviews);
+        VBox.setVgrow(subSceneContainer, Priority.ALWAYS);
+        
+        HBox mainRoot = new HBox(leftLayout, scrollPane);
+        HBox.setHgrow(leftLayout, Priority.ALWAYS);
         
         Scene scene = new Scene(mainRoot, 1024, 768);
         setupInteractions(subScene);
@@ -217,6 +224,43 @@ public class JavaFXPhongMaterialDemo extends Application {
         panel.lookupAll(".label").forEach(n -> n.setStyle("-fx-text-fill: white;"));
 
         return panel;
+    }
+
+    private HBox createTexturePreviewPanel() {
+        HBox container = new HBox(15);
+        container.setPadding(new Insets(10));
+        container.setStyle("-fx-background-color: #444444;");
+        container.setAlignment(Pos.CENTER_LEFT);
+        container.setPrefHeight(160);
+
+        container.getChildren().addAll(
+            createTextureView("Diffuse Map", diffuseMap),
+            createTextureView("Specular Map", specularMap),
+            createTextureView("Bump Map", bumpMap),
+            createTextureView("Emissive Map", selfIllumMap)
+        );
+
+        return container;
+    }
+
+    private VBox createTextureView(String title, Image img) {
+        VBox box = new VBox(5);
+        box.setAlignment(Pos.CENTER);
+        
+        Label label = new Label(title);
+        label.setStyle("-fx-text-fill: white; -fx-font-size: 11px;");
+        
+        javafx.scene.image.ImageView iv = new javafx.scene.image.ImageView(img);
+        iv.setFitWidth(100);
+        iv.setFitHeight(100);
+        iv.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 0);");
+        
+        // 给图片加个边框
+        javafx.scene.layout.StackPane frame = new javafx.scene.layout.StackPane(iv);
+        frame.setStyle("-fx-border-color: #666666; -fx-border-width: 1;");
+        
+        box.getChildren().addAll(frame, label);
+        return box;
     }
 
     private void applyWaterPreset() {
