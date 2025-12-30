@@ -24,23 +24,22 @@ import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
 /**
- * 演示 JavaFX PhongMaterial 的各项属性。
- * 包括：漫射色、漫反射贴图、镜面颜色、镜面贴图、镜面反射率、凹凸贴图、自发光贴图和透明度。
- * 交互：
- * - 鼠标右键：自由旋转
- * - 滚轮/上下方向键：缩放
- * - 鼠标左键点击：在物体表面标红，并慢慢旋转该点至视野中心
+ * 演示 JavaFX PhongMaterial 属性。
+ * 交互说明：
+ * 1. 右键拖拽：手动旋转观察。
+ * 2. 滚轮/上下箭头：缩放视角。
+ * 3. 左键点击：在点击处显示红点，并平滑旋转模型，使点击点移动到视野中心（面向相机）。
  */
 public class JavaFXPhongMaterialDemo extends Application {
 
     private PhongMaterial material;
     private Sphere targetSphere;
-    private Group sphereGroup;      // 包装球体和标记点，以便同步旋转
-    private Sphere selectionMarker; // 点击位置的高红点
+    private Group sphereGroup;      // 包装球体和标记点，同步旋转
+    private Sphere selectionMarker; // 点击位置的红点标记
     private AmbientLight ambientLight;
     private PerspectiveCamera camera;
 
-    // 动态生成的贴图
+    // 动态生成的贴图资源
     private Image generatedDiffuseMap; 
     private Image fileDiffuseMap;      
     private Image specularMap;
@@ -51,66 +50,56 @@ public class JavaFXPhongMaterialDemo extends Application {
     private javafx.scene.image.ImageView diffusePreview; 
     private javafx.scene.image.ImageView normalPreview;  
 
-    // 旋转变换
+    // 旋转变换（应用在 sphereGroup 上）
     private Rotate rotateX = new Rotate(0, Rotate.X_AXIS);
     private Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
     private double lastMouseX, lastMouseY;
 
     @Override
     public void start(Stage primaryStage) {
-        // 初始化贴图资源
         createTextures();
         loadTextureFiles();
 
-        // 创建演示材质
         material = new PhongMaterial(Color.WHITE);
         material.setSpecularPower(5.0);
 
-        // 创建 3D 物体
         targetSphere = new Sphere(150);
         targetSphere.setMaterial(material);
 
-        // 创建点击标记（初始不可见）
         selectionMarker = new Sphere(3);
         PhongMaterial markerMat = new PhongMaterial(Color.RED);
-        // 让标记点自发光，不受场景光照影响
         WritableImage whitePixel = new WritableImage(1, 1);
         whitePixel.getPixelWriter().setColor(0, 0, Color.WHITE);
         markerMat.setSelfIlluminationMap(whitePixel);
         selectionMarker.setMaterial(markerMat);
-        selectionMarker.setMouseTransparent(true); // 不干扰拾取
+        selectionMarker.setMouseTransparent(true);
         selectionMarker.setVisible(false);
 
-        // 使用组包装，旋转应用到组上
+        // 重要：将球体和标记点组合，并应用旋转
         sphereGroup = new Group(targetSphere, selectionMarker);
         sphereGroup.getTransforms().addAll(rotateY, rotateX);
 
-        // 创建背景物体以便观察透明度
         Box backgroundBox = new Box(100, 100, 100);
         backgroundBox.setMaterial(new PhongMaterial(Color.RED));
         backgroundBox.setTranslateZ(50); 
 
         Group worldRoot = new Group(backgroundBox, sphereGroup);
 
-        // 设置相机
         camera = new PerspectiveCamera(true);
         camera.setNearClip(0.1);
         camera.setFarClip(10000.0);
-        camera.setTranslateZ(-800);
+        camera.setTranslateZ(-800); // 相机在 -Z 方向
 
-        // 设置灯光
         PointLight pointLight = new PointLight(Color.WHITE);
         pointLight.setTranslateX(400);
         pointLight.setTranslateY(-400);
         pointLight.setTranslateZ(-400);
         ambientLight = new AmbientLight(Color.rgb(60, 60, 60));
 
-        // 3D 子场景
         SubScene subScene = new SubScene(new Group(worldRoot, pointLight, ambientLight), 700, 600, true, SceneAntialiasing.BALANCED);
         subScene.setFill(Color.web("#222222"));
         subScene.setCamera(camera);
 
-        // UI 布局
         VBox controls = createControlPanel();
         ScrollPane scrollPane = new ScrollPane(controls);
         scrollPane.setFitToWidth(true);
@@ -133,7 +122,6 @@ public class JavaFXPhongMaterialDemo extends Application {
 
         Scene scene = new Scene(mainRoot, 1024, 768);
         setupInteractions(scene, subScene);
-        setupClickFocus();
 
         primaryStage.setTitle("JavaFX PhongMaterial 属性演示 - 小塔");
         primaryStage.setScene(scene);
@@ -155,7 +143,6 @@ public class JavaFXPhongMaterialDemo extends Application {
 
     private void createTextures() {
         int size = 256;
-        // 棋盘格
         WritableImage diff = new WritableImage(size, size);
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
@@ -165,7 +152,6 @@ public class JavaFXPhongMaterialDemo extends Application {
         }
         generatedDiffuseMap = diff;
 
-        // 镜面
         WritableImage spec = new WritableImage(size, size);
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
@@ -177,7 +163,6 @@ public class JavaFXPhongMaterialDemo extends Application {
         }
         specularMap = spec;
 
-        // 法线 (条纹)
         WritableImage normal = new WritableImage(size, size);
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
@@ -188,7 +173,6 @@ public class JavaFXPhongMaterialDemo extends Application {
         }
         generatedNormalMap = normal;
 
-        // 自发光
         WritableImage emissive = new WritableImage(size, size);
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
@@ -209,10 +193,9 @@ public class JavaFXPhongMaterialDemo extends Application {
         panel.setPadding(new Insets(20));
         panel.setStyle("-fx-background-color: #333333; -fx-text-fill: white;");
 
-        Label header = new Label("PhongMaterial 属性");
+        Label header = new Label("PhongMaterial 属性控制");
         header.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        // --- 漫射 ---
         diffuseSourceBox = new ComboBox<>();
         diffuseSourceBox.getItems().addAll("Generated (Checker)", "File (Earth)");
         diffuseSourceBox.setValue("Generated (Checker)");
@@ -229,7 +212,6 @@ public class JavaFXPhongMaterialDemo extends Application {
             diffuseEnableBtn, new Label("贴图来源:"), diffuseSourceBox
         ));
 
-        // --- 镜面 ---
         TitledPane p2 = new TitledPane("镜面 (Specular)", new VBox(5,
             new Label("镜面颜色:"),
             createColorPicker(Color.WHITE, c -> material.setSpecularColor(c)),
@@ -238,7 +220,6 @@ public class JavaFXPhongMaterialDemo extends Application {
             createCheckBox("启用镜面贴图", b -> material.setSpecularMap(b ? specularMap : null))
         ));
 
-        // --- 法线/自发光 ---
         normalSourceBox = new ComboBox<>();
         normalSourceBox.getItems().addAll("Generated (Code)", "File (Earth)");
         normalSourceBox.setValue("Generated (Code)");
@@ -254,7 +235,6 @@ public class JavaFXPhongMaterialDemo extends Application {
             createCheckBox("启用自发光贴图", b -> material.setSelfIlluminationMap(b ? selfIllumMap : null))
         ));
 
-        // --- 灯光 ---
         TitledPane p4 = new TitledPane("灯光 (Lighting)", new VBox(5,
             new Label("环境光颜色:"),
             createColorPicker(Color.rgb(60, 60, 60), c -> ambientLight.setColor(c))
@@ -268,7 +248,7 @@ public class JavaFXPhongMaterialDemo extends Application {
         waterBtn.setMaxWidth(Double.MAX_VALUE);
         waterBtn.setOnAction(e -> applyWaterPreset());
 
-        Button resetBtn = new Button("重置材质");
+        Button resetBtn = new Button("重置所有");
         resetBtn.setMaxWidth(Double.MAX_VALUE);
         resetBtn.setOnAction(e -> resetAll());
 
@@ -352,6 +332,9 @@ public class JavaFXPhongMaterialDemo extends Application {
         normalSourceBox.setValue("File (Earth)");
         updateNormalMapState(true, "File (Earth)");
         material.setSelfIlluminationMap(null);
+        rotateX.setAngle(0);
+        rotateY.setAngle(0);
+        selectionMarker.setVisible(false);
     }
 
     private void applyWaterPreset() {
@@ -382,8 +365,10 @@ public class JavaFXPhongMaterialDemo extends Application {
             double deltaX = e.getSceneX() - lastMouseX;
             double deltaY = e.getSceneY() - lastMouseY;
             lastMouseX = e.getSceneX(); lastMouseY = e.getSceneY();
-            rotateY.setAngle(rotateY.getAngle() + deltaX * 0.3);
-            rotateX.setAngle(rotateX.getAngle() - deltaY * 0.3);
+            if (e.isSecondaryButtonDown()) {
+                rotateY.setAngle(rotateY.getAngle() + deltaX * 0.3);
+                rotateX.setAngle(rotateX.getAngle() - deltaY * 0.3);
+            }
         });
         subScene.setOnScroll(e -> {
             double factor = e.getDeltaY() < 0 ? 0.95 : 1.05;
@@ -393,26 +378,29 @@ public class JavaFXPhongMaterialDemo extends Application {
             if (e.getCode() == javafx.scene.input.KeyCode.UP) camera.setTranslateZ(camera.getTranslateZ() + 20);
             if (e.getCode() == javafx.scene.input.KeyCode.DOWN) camera.setTranslateZ(camera.getTranslateZ() - 20);
         });
-    }
 
-    private void setupClickFocus() {
-        targetSphere.setOnMouseClicked(e -> {
+        // 点击聚焦功能
+        subScene.setOnMouseClicked(e -> {
             if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY && e.isStillSincePress()) {
                 PickResult res = e.getPickResult();
                 Point3D p = res.getIntersectedPoint();
-                if (p != null) {
+                if (p != null && res.getIntersectedNode() == targetSphere) {
+                    // 1. 更新高亮标记
                     selectionMarker.setTranslateX(p.getX());
                     selectionMarker.setTranslateY(p.getY());
                     selectionMarker.setTranslateZ(p.getZ());
                     selectionMarker.setVisible(true);
                     
-                    double deltaY = Math.toDegrees(Math.atan2(p.getX(), p.getZ()));
+                    // 2. 计算极坐标
+                    double lon = Math.toDegrees(Math.atan2(p.getX(), p.getZ()));
                     double radius = targetSphere.getRadius();
-                    double deltaX = Math.toDegrees(Math.asin(p.getY() / radius));
+                    double lat = Math.toDegrees(Math.asin(p.getY() / radius));
 
+                    // 3. 将点 P 旋转到相机方向。
+                    // 相机在 -Z，所以我们要把点旋转到局部坐标系的 180 度（即 -Z 轴方向）。
                     Timeline timeline = new Timeline(new KeyFrame(javafx.util.Duration.millis(1000),
-                        new KeyValue(rotateY.angleProperty(), rotateY.getAngle() - deltaY, Interpolator.EASE_BOTH),
-                        new KeyValue(rotateX.angleProperty(), rotateX.getAngle() - deltaX, Interpolator.EASE_BOTH)
+                        new KeyValue(rotateY.angleProperty(), 180 - lon, Interpolator.EASE_BOTH),
+                        new KeyValue(rotateX.angleProperty(), -lat, Interpolator.EASE_BOTH)
                     ));
                     timeline.play();
                 }
