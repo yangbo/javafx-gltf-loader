@@ -28,13 +28,12 @@ public class JavaFXPhongMaterialDemo extends Application {
     private Sphere targetSphere;
     private AmbientLight ambientLight;
     private PerspectiveCamera camera;
-    
+
     // 动态生成的贴图
     private Image generatedDiffuseMap; // 代码生成的漫反射贴图
     private Image fileDiffuseMap;      // 从文件加载的漫反射贴图 (地球)
     private Image specularMap;
     private Image generatedNormalMap;  // 代码生成的法线贴图
-    private Image fileNormalMapStone;  // 从文件加载的法线贴图 (石头)
     private Image fileNormalMapEarth;  // 从文件加载的法线贴图 (地球配套)
     private Image selfIllumMap;
 
@@ -90,7 +89,7 @@ public class JavaFXPhongMaterialDemo extends Application {
 
         // UI 控制面板
         VBox controls = createControlPanel();
-        
+
         // 使用 ScrollPane 包装控制面板，并设置固定/最小宽度
         ScrollPane scrollPane = new ScrollPane(controls);
         scrollPane.setFitToWidth(true);
@@ -105,17 +104,17 @@ public class JavaFXPhongMaterialDemo extends Application {
         subSceneContainer.setMinWidth(0); // 允许容器缩小到 0
         subScene.widthProperty().bind(subSceneContainer.widthProperty());
         subScene.heightProperty().bind(subSceneContainer.heightProperty());
-        
+
         // 底部贴图预览
         HBox texturePreviews = createTexturePreviewPanel();
-        
+
         // 垂直排列：3D 视图在上，贴图预览在下
         VBox leftLayout = new VBox(subSceneContainer, texturePreviews);
         VBox.setVgrow(subSceneContainer, Priority.ALWAYS);
-        
+
         HBox mainRoot = new HBox(leftLayout, scrollPane);
         HBox.setHgrow(leftLayout, Priority.ALWAYS);
-        
+
         Scene scene = new Scene(mainRoot, 1024, 768);
         setupInteractions(scene, subScene);
 
@@ -125,15 +124,10 @@ public class JavaFXPhongMaterialDemo extends Application {
     }
 
     private void loadTextureFiles() {
-        // 加载法线贴图 (石头)
-        fileNormalMapStone = loadImage("/materials/bump-map-stone.png");
         // 加载法线贴图 (地球)
-        fileNormalMapEarth = loadImage("/materials/earthNormalMap_8k-tig.png");
+        fileNormalMapEarth = loadImage("/materials/1k_earth_bump.png");
         // 加载漫反射贴图 (地球)
         fileDiffuseMap = loadImage("/materials/1k_earth_daymap.png");
-        if (fileDiffuseMap == null) {
-            fileDiffuseMap = loadImage("/materials/2k_earth_daymap.jpg");
-        }
     }
 
     private Image loadImage(String path) {
@@ -184,9 +178,9 @@ public class JavaFXPhongMaterialDemo extends Application {
                 double slopeY = 0;
                 double len = Math.sqrt(slopeX * slopeX + slopeY * slopeY + 1.0);
                 normal.getPixelWriter().setColor(x, y, Color.color(
-                    -slopeX / len * 0.5 + 0.5,
-                    -slopeY / len * 0.5 + 0.5,
-                    1.0 / len * 0.5 + 0.5
+                        -slopeX / len * 0.5 + 0.5,
+                        -slopeY / len * 0.5 + 0.5,
+                        1.0 / len * 0.5 + 0.5
                 ));
             }
         }
@@ -238,25 +232,25 @@ public class JavaFXPhongMaterialDemo extends Application {
         });
 
         TitledPane p1 = new TitledPane("漫射 (Diffuse)", new VBox(5,
-            new Label("漫射颜色 (包含透明度):"),
-            createColorPicker(Color.WHITE, c -> material.setDiffuseColor(c)),
-            diffuseEnableBtn,
-            new Label("贴图来源:"),
-            diffuseSourceBox
+                new Label("漫射颜色 (包含透明度):"),
+                createColorPicker(Color.WHITE, c -> material.setDiffuseColor(c)),
+                diffuseEnableBtn,
+                new Label("贴图来源:"),
+                diffuseSourceBox
         ));
 
         // --- 镜面属性 ---
         TitledPane p2 = new TitledPane("镜面 (Specular)", new VBox(5,
-            new Label("镜面颜色:"),
-            createColorPicker(Color.WHITE, c -> material.setSpecularColor(c)),
-            new Label("粗糙度 (Specular Power):"),
-            createNumericInput(5.0, v -> material.setSpecularPower(v)),
-            createCheckBox("启用镜面贴图", b -> material.setSpecularMap(b ? specularMap : null))
+                new Label("镜面颜色:"),
+                createColorPicker(Color.WHITE, c -> material.setSpecularColor(c)),
+                new Label("粗糙度 (Specular Power):"),
+                createNumericInput(5.0, v -> material.setSpecularPower(v)),
+                createCheckBox("启用镜面贴图", b -> material.setSpecularMap(b ? specularMap : null))
         ));
 
         // --- 凹凸与自发光 ---
         normalSourceBox = new ComboBox<>();
-        normalSourceBox.getItems().addAll("Generated (Code)", "File (Stone)", "File (Earth Normal)");
+        normalSourceBox.getItems().addAll("Generated (Code)", "File (Earth)");
         normalSourceBox.setValue("Generated (Code)");
         normalSourceBox.setMaxWidth(Double.MAX_VALUE);
         normalSourceBox.setDisable(true);
@@ -275,16 +269,16 @@ public class JavaFXPhongMaterialDemo extends Application {
         });
 
         TitledPane p3 = new TitledPane("贴图 (Maps)", new VBox(5,
-            normalEnableBtn,
-            new Label("贴图来源:"),
-            normalSourceBox,
-            createCheckBox("启用自发光贴图 (Emissive)", b -> material.setSelfIlluminationMap(b ? selfIllumMap : null))
+                normalEnableBtn,
+                new Label("贴图来源:"),
+                normalSourceBox,
+                createCheckBox("启用自发光贴图 (Emissive)", b -> material.setSelfIlluminationMap(b ? selfIllumMap : null))
         ));
 
         // --- 灯光设置 ---
         TitledPane p4 = new TitledPane("灯光 (Lighting)", new VBox(5,
-            new Label("环境光颜色:"),
-            createColorPicker(Color.rgb(60, 60, 60), c -> ambientLight.setColor(c))
+                new Label("环境光颜色:"),
+                createColorPicker(Color.rgb(60, 60, 60), c -> ambientLight.setColor(c))
         ));
 
         // --- 预设 ---
@@ -315,17 +309,17 @@ public class JavaFXPhongMaterialDemo extends Application {
         material.setBumpMap(null);
         material.setSelfIlluminationMap(null);
         ambientLight.setColor(Color.rgb(60, 60, 60));
-        
+
         diffuseEnableBtn.setSelected(false);
         diffuseSourceBox.setValue("Generated (Checker)");
         diffuseSourceBox.setDisable(true);
         diffusePreview.setImage(generatedDiffuseMap);
-        
+
         normalEnableBtn.setSelected(false);
         normalSourceBox.setValue("Generated (Code)");
         normalSourceBox.setDisable(true);
         normalPreview.setImage(generatedNormalMap);
-        
+
         camera.setTranslateZ(-800);
     }
 
@@ -334,18 +328,17 @@ public class JavaFXPhongMaterialDemo extends Application {
         if (enabled) {
             img = source.equals("File (Earth)") ? fileDiffuseMap : generatedDiffuseMap;
         }
-        material.setDiffuseMap(img != null ? img : null);
+        material.setDiffuseMap(img);
         diffusePreview.setImage(enabled ? (img != null ? img : generatedDiffuseMap) : generatedDiffuseMap);
     }
 
     private void updateNormalMapState(boolean enabled, String source) {
         Image img = null;
         if (enabled) {
-            if (source.equals("File (Stone)")) img = fileNormalMapStone;
-            else if (source.equals("File (Earth Normal)")) img = fileNormalMapEarth;
+            if (source.equals("File (Earth)")) img = fileNormalMapEarth;
             else img = generatedNormalMap;
         }
-        material.setBumpMap(img != null ? img : null);
+        material.setBumpMap(img);
         normalPreview.setImage(enabled ? (img != null ? img : generatedNormalMap) : generatedNormalMap);
     }
 
@@ -365,10 +358,10 @@ public class JavaFXPhongMaterialDemo extends Application {
         normalPreview.setFitHeight(100);
 
         container.getChildren().addAll(
-            createTextureViewWithExistingIV("Diffuse Map", diffusePreview),
-            createTextureView("Specular Map", specularMap),
-            createTextureViewWithExistingIV("Normal Map (Bump)", normalPreview),
-            createTextureView("Emissive Map", selfIllumMap)
+                createTextureViewWithExistingIV("Diffuse Map", diffusePreview),
+                createTextureView("Specular Map", specularMap),
+                createTextureViewWithExistingIV("Normal Map (Bump)", normalPreview),
+                createTextureView("Emissive Map", selfIllumMap)
         );
 
         return container;
@@ -397,17 +390,17 @@ public class JavaFXPhongMaterialDemo extends Application {
         material.setDiffuseColor(Color.WHITE);
         material.setSpecularColor(Color.WHITE);
         material.setSpecularPower(20.0);
-        
+
         diffuseEnableBtn.setSelected(true);
         diffuseSourceBox.setValue("File (Earth)");
         diffuseSourceBox.setDisable(false);
         updateDiffuseMapState(true, "File (Earth)");
-        
+
         normalEnableBtn.setSelected(true);
         normalSourceBox.setValue("File (Earth Normal)");
         normalSourceBox.setDisable(false);
         updateNormalMapState(true, "File (Earth Normal)");
-        
+
         material.setSelfIlluminationMap(null);
     }
 
@@ -415,15 +408,15 @@ public class JavaFXPhongMaterialDemo extends Application {
         material.setDiffuseColor(Color.web("#0077be", 0.5));
         material.setSpecularColor(Color.WHITE);
         material.setSpecularPower(64.0);
-        
+
         diffuseEnableBtn.setSelected(false);
         diffuseSourceBox.setDisable(true);
         updateDiffuseMapState(false, "Generated (Checker)");
-        
+
         normalEnableBtn.setSelected(true);
         normalSourceBox.setValue("Generated (Code)");
         normalSourceBox.setDisable(false);
-        
+
         int size = 256;
         WritableImage waterNormal = new WritableImage(size, size);
         for (int y = 0; y < size; y++) {
@@ -434,15 +427,15 @@ public class JavaFXPhongMaterialDemo extends Application {
                 double slopeY = amp * freq * Math.cos(x * freq + y * freq);
                 double len = Math.sqrt(slopeX * slopeX + slopeY * slopeY + 1.0);
                 waterNormal.getPixelWriter().setColor(x, y, Color.color(
-                    -slopeX / len * 0.5 + 0.5,
-                    -slopeY / len * 0.5 + 0.5,
-                    1.0 / len * 0.5 + 0.5
+                        -slopeX / len * 0.5 + 0.5,
+                        -slopeY / len * 0.5 + 0.5,
+                        1.0 / len * 0.5 + 0.5
                 ));
             }
         }
         material.setBumpMap(waterNormal);
         normalPreview.setImage(waterNormal);
-        
+
         material.setSelfIlluminationMap(null);
     }
 
