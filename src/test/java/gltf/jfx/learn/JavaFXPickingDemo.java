@@ -41,6 +41,7 @@ public class JavaFXPickingDemo extends Application {
     private final Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
 
     private Label infoLabel;
+    private Group modelGroup;
     private PerspectiveCamera camera;
     private Shape3D lastPickedNode = null;
     private Material lastOriginalMaterial = null;
@@ -61,7 +62,8 @@ public class JavaFXPickingDemo extends Application {
             }
 
             JFXGLTFAsset asset = new JFXGLTFAsset(gltfPath);
-            Group modelGroup = asset.build3DScene(asset.scenes[0]);
+            modelGroup = asset.build3DScene(asset.scenes[0]);
+            modelGroup.setId("RobotModelRoot");
             
             // glTF 通常是 Y-up，JavaFX 是 Y-down，旋转 180 度修正
             modelGroup.getTransforms().add(new Rotate(180, Rotate.X_AXIS));
@@ -207,6 +209,16 @@ public class JavaFXPickingDemo extends Application {
             Bounds parentBounds = shape.getBoundsInParent();
             sb.append(String.format("父级边界 (Parent): %.1f x %.1f x %.1f\n", 
                 parentBounds.getWidth(), parentBounds.getHeight(), parentBounds.getDepth()));
+
+            // 获取相对于模型根节点的边界
+            Bounds rootBounds = JFXGLTFAsset.getBoundsInParents(shape, modelGroup);
+            sb.append(String.format("根级边界 (Root): %.1f x %.1f x %.1f\n", 
+                rootBounds.getWidth(), rootBounds.getHeight(), rootBounds.getDepth()));
+
+            // 获取相对于场景的边界
+            Bounds sceneBounds = JFXGLTFAsset.getBoundsInParents(shape, null);
+            sb.append(String.format("场景边界 (Scene): %.1f x %.1f x %.1f\n", 
+                sceneBounds.getWidth(), sceneBounds.getHeight(), sceneBounds.getDepth()));
 
             infoLabel.setText(sb.toString());
         } else {

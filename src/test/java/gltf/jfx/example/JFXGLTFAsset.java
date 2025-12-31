@@ -12,7 +12,11 @@ import gltf.mesh.GLTFMesh;
 import gltf.mesh.GLTFMeshPrimitive;
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point3D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
@@ -199,6 +203,49 @@ public class JFXGLTFAsset extends GLTFAsset {
         returnVal.setScaleY(40);
         returnVal.setScaleZ(40);
         return returnVal;
+    }
+
+    /**
+     * 计算节点在指定根节点（或场景）坐标系下的边界框。
+     * 这是一个深度计算，通过将本地边界的所有顶点转换到目标坐标系来重新计算 AABB。
+     *
+     * @param node 要计算的节点
+     * @param root 参照的根节点，如果为 null 则相对于场景坐标系
+     * @return 变换后的边界框
+     */
+    public static Bounds getBoundsInParents(Node node, Node root) {
+        Bounds local = node.getBoundsInLocal();
+        Point3D[] corners = new Point3D[]{
+                new Point3D(local.getMinX(), local.getMinY(), local.getMinZ()),
+                new Point3D(local.getMinX(), local.getMinY(), local.getMaxZ()),
+                new Point3D(local.getMinX(), local.getMaxY(), local.getMinZ()),
+                new Point3D(local.getMinX(), local.getMaxY(), local.getMaxZ()),
+                new Point3D(local.getMaxX(), local.getMinY(), local.getMinZ()),
+                new Point3D(local.getMaxX(), local.getMinY(), local.getMaxZ()),
+                new Point3D(local.getMaxX(), local.getMaxY(), local.getMinZ()),
+                new Point3D(local.getMaxX(), local.getMaxY(), local.getMaxZ())
+        };
+
+        double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
+
+        for (Point3D corner : corners) {
+            // 将点转换到场景坐标
+            Point3D p = node.localToScene(corner);
+            // 如果指定了 root，再从场景转换回 root 的本地坐标
+            if (root != null) {
+                p = root.sceneToLocal(p);
+            }
+
+            minX = Math.min(minX, p.getX());
+            minY = Math.min(minY, p.getY());
+            minZ = Math.min(minZ, p.getZ());
+            maxX = Math.max(maxX, p.getX());
+            maxY = Math.max(maxY, p.getY());
+            maxZ = Math.max(maxZ, p.getZ());
+        }
+
+        return new BoundingBox(minX, minY, minZ, maxX - minX, maxY - minY, maxZ - minZ);
     }
 
     public Group build3dNode(GLTFNode node) {
