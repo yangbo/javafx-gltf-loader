@@ -110,7 +110,7 @@ public class JavaFXPickingDemo extends Application {
             uiPanel.setMouseTransparent(true); // 让 UI 面板对鼠标完全透明，事件穿透到 3D 场景
             // vbox 可以设置圆角效果
             uiPanel.setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.5), new CornerRadii(5), Insets.EMPTY)));
-            uiPanel.setMaxWidth(400);
+            // uiPanel.setMaxWidth(400);
             uiPanel.setMaxHeight(250);
 
             StackPane mainRoot = new StackPane(subScene, uiPanel);
@@ -212,7 +212,7 @@ public class JavaFXPickingDemo extends Application {
 
             // 获取相对于模型根节点的边界
             Bounds rootBounds = JFXGLTFAsset.getBoundsInParents(shape, modelGroup);
-            sb.append(String.format("根级边界 (Root): %.1f x %.1f x %.1f\n", 
+            sb.append(String.format("ModelGroup边界 (GLTF Group): %.1f x %.1f x %.1f\n",
                 rootBounds.getWidth(), rootBounds.getHeight(), rootBounds.getDepth()));
 
             // 获取相对于场景的边界
