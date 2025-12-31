@@ -2,6 +2,7 @@ package gltf.jfx.learn;
 
 import gltf.jfx.example.JFXGLTFAsset;
 import javafx.application.Application;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -40,6 +41,7 @@ public class JavaFXPickingDemo extends Application {
     private final Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
 
     private Label infoLabel;
+    private PerspectiveCamera camera;
     private Shape3D lastPickedNode = null;
     private Material lastOriginalMaterial = null;
     // 给高亮材质添加透明效果
@@ -87,7 +89,7 @@ public class JavaFXPickingDemo extends Application {
             SubScene subScene = new SubScene(root3D, 800, 600, true, SceneAntialiasing.BALANCED);
             subScene.setFill(Color.DARKSLATEGRAY);
 
-            PerspectiveCamera camera = new PerspectiveCamera(true);
+            camera = new PerspectiveCamera(true);
             camera.setNearClip(0.1);
             camera.setFarClip(10000.0);
             camera.setTranslateZ(-800);
@@ -98,9 +100,13 @@ public class JavaFXPickingDemo extends Application {
             infoLabel.setTextFill(Color.LIGHTGREEN);
             infoLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
 
-            VBox uiPanel = new VBox(10, new Label("JavaFX Picking API Demo"), infoLabel);
+            Label javaFXPickingApiDemo = new Label("JavaFX Picking API Demo");
+            javaFXPickingApiDemo.setTextFill(Color.WHITE);
+            VBox uiPanel = new VBox(10, javaFXPickingApiDemo, infoLabel);
             uiPanel.setPadding(new Insets(20));
-            uiPanel.setPickOnBounds(false); // 允许鼠标穿透面板背景点击 3D 场景
+            uiPanel.setPickOnBounds(false); 
+            uiPanel.setMouseTransparent(true); // 让 UI 面板对鼠标完全透明，事件穿透到 3D 场景
+            // vbox 可以设置圆角效果
             uiPanel.setBackground(new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.5), new CornerRadii(5), Insets.EMPTY)));
             uiPanel.setMaxWidth(400);
             uiPanel.setMaxHeight(250);
@@ -182,7 +188,25 @@ public class JavaFXPickingDemo extends Application {
                 sb.append(String.format("纹理坐标 (u,v): %.3f, %.3f\n", tex.getX(), tex.getY()));
             }
             
-            sb.append(String.format("距离相机: %.2f\n", res.getIntersectedDistance()));
+            sb.append(String.format("API 原始距离: %.2f\n", res.getIntersectedDistance()));
+
+            // 手动计算物理距离
+            // 1. 获取交点在世界坐标系中的位置
+            Point3D intersectedPointInWorld = shape.localToScene(res.getIntersectedPoint());
+            // 2. 获取相机在世界坐标系中的位置
+            Point3D cameraPositionInWorld = camera.localToScene(0, 0, 0);
+            // 3. 计算两点间的距离
+            double physicalDistance = cameraPositionInWorld.distance(intersectedPointInWorld);
+            sb.append(String.format("计算物理距离: %.2f\n", physicalDistance));
+
+            // 获取边界信息
+            Bounds localBounds = shape.getBoundsInLocal();
+            sb.append(String.format("本地边界 (Local): %.1f x %.1f x %.1f\n", 
+                localBounds.getWidth(), localBounds.getHeight(), localBounds.getDepth()));
+            
+            Bounds parentBounds = shape.getBoundsInParent();
+            sb.append(String.format("父级边界 (Parent): %.1f x %.1f x %.1f\n", 
+                parentBounds.getWidth(), parentBounds.getHeight(), parentBounds.getDepth()));
 
             infoLabel.setText(sb.toString());
         } else {
